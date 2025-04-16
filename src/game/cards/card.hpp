@@ -16,29 +16,19 @@ public:
 
   bool beats( const Card &other, CardSuit trump ) const noexcept;
 
-  template <class Self> bool operator== ( this Self &&self, Self &&other ) {
-    return self.rank == other.rank && self.suit == other.suit;
-  }
+  bool operator== ( const Card &other ) const noexcept;
 
-  template <class Self> bool operator!= ( this Self &&self, Self &&other ) {
-    return !( self == other );
-  }
+  bool operator!= ( const Card &other ) const noexcept;
 
-  template <class Self> bool operator> ( this Self &&self, Self &&other ) {
-    return self.rank > other.rank;
-  }
+  bool operator> ( const Card &other ) const noexcept;
 
-  template <class Self> bool operator>= ( this Self &&self, Self &&other ) {
-    return self.rank >= other.rank;
-  }
+  bool operator>= ( const Card &other ) const noexcept;
 
-  template <class Self> bool operator< ( this Self &&self, Self &&other ) {
-    return self.rank < other.rank;
-  }
+  bool operator< ( const Card &other ) const noexcept;
 
-  template <class Self> bool operator<= ( this Self &&self, Self &&other ) {
-    return self.rank <= other.rank;
-  }
+  bool operator<= ( const Card &other ) const noexcept;
+
+  operator std::string () const noexcept;
 };
 
 } // namespace durak

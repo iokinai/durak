@@ -19,6 +19,8 @@ set(PROJECT_SOURCES
     src/pages/gamepage.cpp
     src/game/fsm/state.cpp
     src/game/fsm/fsm.cpp
+    src/game/cards/card.cpp
+    src/widgets/cardwidget/cardwidget.cpp
 )
 
 set(PROJECT_HEADERS
@@ -26,14 +28,23 @@ set(PROJECT_HEADERS
     src/pages/gamepage.hpp
     src/game/fsm/state.hpp
     src/game/fsm/fsm.hpp
+    src/game/cards/card.cpp
     src/game/fsm/action.hpp
     src/game/fsm/event.hpp
+    src/widgets/cardwidget/cardwidget.hpp
 )
 
 set(PROJECT_UIS
     src/mainwindow.ui
     src/pages/gamepage.ui
+    src/widgets/cardwidget/cardwidget.ui
 )
+
+set(PROJECT_RESOURCES
+    durak.qrc
+)
+
+qt_add_resources(RESOURCES "${PROJECT_RESOURCES}")
 
 qt_add_executable(
     ${PROJECT_NAME}
@@ -41,6 +52,7 @@ qt_add_executable(
     ${PROJECT_SOURCES}
     ${PROJECT_HEADERS}
     ${PROJECT_UIS}
+    ${RESOURCES}
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES WIN32_EXECUTABLE TRUE)
