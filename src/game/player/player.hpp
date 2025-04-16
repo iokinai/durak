@@ -4,7 +4,6 @@
 #include <game/cards/card.hpp>
 #include <game/cards/cardhash.hpp>
 #include <unordered_set>
-#include <vector>
 
 namespace durak {
 
@@ -25,8 +24,7 @@ protected slots:
   virtual void onPickCard( const Card &c, CardSuit trump ) = 0;
 
 signals:
-  void cardPicked( const Card &result );
-  void cantDefend();
+  void cardPickResult( std::optional<Card> res );
 };
 
 } // namespace durak

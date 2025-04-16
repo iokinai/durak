@@ -19,6 +19,10 @@ signals:
   void playerPickCard( const Card &current );
   void playerPickedCard();
   void uiShuffleCards();
+  void uiDealCards();
+  void uiAttackRequest();
+  void uiDefenceRequest();
+  void uiGameLogicError();
 
 public:
   GameController( PlayerBuffer &&b, const FSM &fsm ) noexcept;
@@ -26,12 +30,13 @@ public:
   Card current_card();
 
   void doStartActions( Action act ) noexcept;
-
   void shuffleCards() noexcept;
-
   void start() noexcept;
-
   void gameLoop() noexcept;
+  void dealCards() noexcept;
+
+  Card attackRequest( std::shared_ptr<Player> player ) noexcept;
+  std::optional<Card> defenceRequest( std::shared_ptr<Player> player ) noexcept;
 
   [[deprecated( "TEST" )]]
   void testloop() {

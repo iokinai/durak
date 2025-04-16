@@ -4,16 +4,12 @@ namespace durak {
 
 enum class Event {
   GameStarted,
-  DealingCards,
-  PlayerAttack,
-  NextPlayerDefend,
+  RoundStarted,
+  PlayerAttacked,
+  PlayerDefended,
   PlayerCantDefend,
-  PlayerTakeCards,
-  DefendedSuccessfully,
-  PlayerNoCards,
-  PlayerWin,
-  PlayerLost,
-  GameEnded,
+  RoundEnded,
+  CardsDrawed,
 };
 
 }

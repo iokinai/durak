@@ -10,13 +10,13 @@ void PlayerAI::onPickCard( const Card &c, CardSuit trump ) {
       [&c, trump]( const Card &card ) { return card.beats( c, trump ); } );
 
   if ( found == cards.end() ) {
-    emit cantDefend();
+    emit cardPickResult( std::nullopt );
     return;
   }
 
   cards.erase( found );
 
-  emit cardPicked( *found );
+  emit cardPickResult( std::move( *found ) );
 }
 
 } // namespace durak
