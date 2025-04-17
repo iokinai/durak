@@ -9,8 +9,5 @@ int main( int argc, char **argv ) {
   durak::MainWindow w;
   w.show();
 
-  durak::CardWidget cw( durak::Card( durak::CardSuit::Diamond, 12 ) );
-  cw.show();
-
   return app.exec();
 }

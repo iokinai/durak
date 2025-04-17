@@ -38,35 +38,35 @@ public:
   Card attackRequest( std::shared_ptr<Player> player ) noexcept;
   std::optional<Card> defenceRequest( std::shared_ptr<Player> player ) noexcept;
 
-  [[deprecated( "TEST" )]]
-  void testloop() {
-    while ( true ) {
-      auto cc     = current_card();
-      auto player = b.next();
-      QEventLoop el;
-      Card picked;
+  // [[deprecated( "TEST" )]]
+  // void testloop() {
+  //   while ( true ) {
+  //     auto cc     = current_card();
+  //     auto player = b.next();
+  //     QEventLoop el;
+  //     Card picked;
 
-      connect( this, &GameController::playerPickCard, player.get(),
-               &Player::onPickCard );
+  //     connect( this, &GameController::playerPickCard, player.get(),
+  //              &Player::onPickCard );
 
-      connect( player.get(), &Player::cardPicked, this,
-               [&el, &picked]( const Card &result ) {
-                 picked = result;
-                 el.quit();
-               } );
+  //     connect( player.get(), &Player::cardPicked, this,
+  //              [&el, &picked]( const Card &result ) {
+  //                picked = result;
+  //                el.quit();
+  //              } );
 
-      emit playerPickCard( cc );
+  //     emit playerPickCard( cc );
 
-      el.exec();
+  //     el.exec();
 
-      disconnect( this, &GameController::playerPickCard, player.get(),
-                  &Player::onPickCard );
+  //     disconnect( this, &GameController::playerPickCard, player.get(),
+  //                 &Player::onPickCard );
 
-      disconnect( player.get(), &Player::cardPicked, this, nullptr );
+  //     disconnect( player.get(), &Player::cardPicked, this, nullptr );
 
-      // do something with card
-    }
-  }
+  //     // do something with card
+  //   }
+  // }
 };
 
 } // namespace durak

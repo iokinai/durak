@@ -11,6 +11,13 @@ class Card {
 
 public:
   Card( CardSuit suit, uint8_t rank );
+
+  Card( const Card &other ) = delete;
+  Card( Card &&other )      = default;
+
+  Card &operator= ( const Card &other ) = delete;
+  Card &operator= ( Card &&other )      = default;
+
   CardSuit getSuit() const noexcept;
   uint8_t getRank() const noexcept;
 

@@ -13,20 +13,20 @@ QString CardWidget::loadFont() const noexcept {
   return family;
 }
 
-CardWidget::CardWidget( Card &&card, QWidget *parent )
-    : QWidget( parent ), card( std::move( card ) ), ui( new Ui::CardWidget ) {
+CardWidget::CardWidget( Card *card, QWidget *parent )
+    : QWidget( parent ), card( card ), ui( new Ui::CardWidget ) {
   ui->setupUi( this );
 
   QFont font( loadFont(), 20, QFont::Bold );
 
   ui->rankTopText->setFont( font );
-  ui->rankTopText->setText( ( QString::fromStdString( card ) ) );
+  ui->rankTopText->setText( ( QString::fromStdString( *card ) ) );
 
   font.setPointSize( 12 );
 
   ui->suitTopImage->setFont( font );
   ui->suitTopImage->setText(
-      QString::fromStdString( suitToString( card.getSuit() ) ) );
+      QString::fromStdString( suitToString( card->getSuit() ) ) );
 }
 
 CardWidget::~CardWidget() {

@@ -2,6 +2,7 @@
 
 #include <QWidget>
 #include <game/cards/card.hpp>
+#include <game/player/player.hpp>
 
 namespace Ui {
 class CardWidget;
@@ -14,12 +15,14 @@ class CardWidget : public QWidget {
 
   Ui::CardWidget *ui;
 
-  Card card;
+protected:
+  Card *card;
+  Player *player;
 
   QString loadFont() const noexcept;
 
 public:
-  CardWidget( Card &&card, QWidget *parent = nullptr );
+  CardWidget( Card *card, QWidget *parent = nullptr );
   ~CardWidget();
 };
 

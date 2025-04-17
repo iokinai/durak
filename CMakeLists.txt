@@ -20,8 +20,11 @@ set(PROJECT_SOURCES
     src/game/fsm/state.cpp
     src/game/fsm/fsm.cpp
     src/game/cards/card.cpp
+    src/game/player/playerAI.cpp
+    src/game/player/playerHuman.cpp
     src/widgets/cardwidget/cardwidget.cpp
-    src/widgets/playerwidget/playerwidget.cpp
+    src/widgets/cardwidget/clickablecardwidget.cpp
+    src/widgets/playerwidget/hostplayerwidget.cpp
 )
 
 set(PROJECT_HEADERS
@@ -29,10 +32,16 @@ set(PROJECT_HEADERS
     src/pages/gamepage.hpp
     src/game/fsm/state.hpp
     src/game/fsm/fsm.hpp
-    src/game/cards/card.cpp
+    src/game/cards/card.hpp
+    src/game/player/playerAI.hpp
+    src/game/player/playerHuman.hpp
+    src/game/player/player.hpp
     src/game/fsm/action.hpp
     src/game/fsm/event.hpp
     src/widgets/cardwidget/cardwidget.hpp
+    src/widgets/playerwidget/playerwidget.hpp
+    src/widgets/cardwidget/clickablecardwidget.hpp
+    src/widgets/playerwidget/hostplayerwidget.hpp
     src/widgets/playerwidget/playerwidget.hpp
 )
 
@@ -40,7 +49,7 @@ set(PROJECT_UIS
     src/mainwindow.ui
     src/pages/gamepage.ui
     src/widgets/cardwidget/cardwidget.ui
-    src/widgets/playerwidget/playerwidget.ui
+    src/widgets/playerwidget/hostplayerwidget.ui
 )
 
 set(PROJECT_RESOURCES

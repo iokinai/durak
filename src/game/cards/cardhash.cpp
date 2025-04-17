@@ -10,4 +10,8 @@ size_t CardHash::operator() ( const Card &card ) const noexcept {
   return h1 ^ ( h2 << 1 );
 }
 
+size_t CardHash::operator() ( std::unique_ptr<Card> card ) const noexcept {
+  return this->operator() ( *card );
+}
+
 } // namespace durak

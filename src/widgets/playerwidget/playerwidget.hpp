@@ -2,28 +2,31 @@
 
 #include <QObject>
 #include <game/cards/card.hpp>
+#include <widgets/cardwidget/cardwidget.hpp>
 
 namespace durak {
 
-class PlayerWidget {
+class PlayerWidget : public QWidget {
   Q_OBJECT
 
 protected:
-  QVector<Card> cards;
+  QVector<CardWidget *> cards;
 
 public:
+  inline explicit PlayerWidget( QWidget *parent = nullptr )
+      : QWidget( parent ) { }
   virtual ~PlayerWidget() = default;
 
-protected slots:
-  virtual void onCardsGiven( const QVector<Card> &cards ) noexcept = 0;
-  virtual void onAttackTurn() noexcept                             = 0;
-  virtual void onDefenceTurn( const Card &attackCard ) noexcept    = 0;
-  virtual void onTakeCards( const QVector<Card> &cards ) noexcept  = 0;
+public slots:
+  virtual void onCardsGiven( const QVector<Card *> &cards ) noexcept = 0;
+  virtual void onAttackTurn() noexcept                               = 0;
+  virtual void onDefenceTurn( const Card &attackCard ) noexcept      = 0;
+  virtual void onTakeCards( const QVector<Card *> &cards ) noexcept  = 0;
 
 signals:
-  void attack( const Card &card ) noexcept;
-  void defence( std::optional<Card> card ) noexcept;
-  void cardsTook() noexcept;
+  void attack( Card *card );
+  void defence( Card *card );
+  void cardsTook();
 };
 
 } // namespace durak
