@@ -7,13 +7,13 @@
 namespace durak {
 
 GameController::GameController(
-    PlayerBuffer &&b, const FSM &fsm,
+    PlayerBuffer &&b, std::unique_ptr<FSM> fsm,
     std::vector<std::unique_ptr<Card>> &&heap ) noexcept
-    : b( std::move( b ) ), fsm( fsm ), heap( std::move( heap ) ),
-      random_device(), random_engine( random_device ) { }
+    : b( std::move( b ) ), fsm( std::move( fsm ) ), heap( std::move( heap ) ),
+      random_device(), random_engine( random_device() ) { }
 
 void GameController::start() noexcept {
-  std::optional<Action> act = fsm.onEvent( Event::GameStarted );
+  std::optional<Action> act = fsm->onEvent( Event::GameStarted );
 
   if ( !act.has_value() ) {
     return;
@@ -72,6 +72,11 @@ void GameController::formatTable() noexcept {
   }
 }
 
+std::optional<Card>
+GameController::defenceRequest( std::shared_ptr<Player> player ) noexcept {
+  return std::nullopt;
+}
+
 void GameController::gameLoop() noexcept {
   CardSuit currentTrump;
 
@@ -86,11 +91,14 @@ void GameController::gameLoop() noexcept {
         break;
       }
 
-      auto action = fsm.onEvent( lastEvent );
+      auto action = fsm->onEvent( lastEvent );
 
       switch ( action.value() ) {
-      case Action::GiveCards :
+      case Action::GiveCards : {
+        formatTable();
+        lastEvent = Event::RoundStarted;
         break;
+      }
       case Action::PlayerAttack : {
         currentCard = attackRequest( currentPlayer );
         lastEvent   = Event::PlayerAttacked;

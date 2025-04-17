@@ -24,16 +24,18 @@ PlayerHuman::PlayerHuman( HostPlayerWidget *playerWidget )
 
   connect( this, &PlayerHuman::pw_defenceTurn, playerWidget,
            &HostPlayerWidget::onDefenceTurn );
+
+  connect( this, &PlayerHuman::pw_takeCards, playerWidget,
+           &HostPlayerWidget::onCardsGiven );
 }
 
 void PlayerHuman::pw_onAttacked( Card *attackCard ) noexcept {
-  disconnect(playerWidget, &PlayerWidget::attack, this, nullptr);
+  disconnect( playerWidget, &PlayerWidget::attack, this, nullptr );
 
   emit gc_attacked( attackCard );
 }
 void PlayerHuman::pw_onDefended( Card *defenceCard ) noexcept {
-  disconnect( playerWidget, &PlayerWidget::defence, this,
-           nullptr );
+  disconnect( playerWidget, &PlayerWidget::defence, this, nullptr );
 
   emit gc_defended( defenceCard );
 }
@@ -50,6 +52,21 @@ void PlayerHuman::gc_onDefenceTurn( const Card &attackCard ) noexcept {
            &PlayerHuman::pw_onDefended );
 
   emit pw_defenceTurn( attackCard );
+}
+
+template <typename T>
+QVector<T *> toQVectorRaw( const std::vector<std::unique_ptr<T>> &v ) {
+  QVector<T *> result;
+  result.reserve( v.size() );
+  for ( const auto &item : v ) {
+    result.append( item.get() );
+  }
+  return result;
+}
+
+void PlayerHuman::takeCards( std::vector<std::unique_ptr<Card>> cards ) {
+  this->cards = std::move( cards );
+  emit pw_takeCards( toQVectorRaw( cards ) );
 }
 
 } // namespace durak

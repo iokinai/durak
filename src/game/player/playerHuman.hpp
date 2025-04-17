@@ -9,6 +9,9 @@ class PlayerHuman : public Player {
 private:
   HostPlayerWidget *playerWidget;
 
+protected:
+  virtual void takeCards( std::vector<std::unique_ptr<Card>> cards ) override;
+
 protected slots:
   virtual void gc_onAttackTurn() noexcept override;
   virtual void gc_onDefenceTurn( const Card &attackCard ) noexcept override;

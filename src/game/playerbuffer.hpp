@@ -9,12 +9,12 @@ namespace durak {
 
 class PlayerBuffer {
   std::vector<std::shared_ptr<Player>> players;
-  mutable size_t current;
+  mutable int64_t current;
 
   using iterator       = std::vector<std::shared_ptr<Player>>::iterator;
   using const_iterator = std::vector<std::shared_ptr<Player>>::const_iterator;
 
-  size_t circlefn( size_t min, size_t max, size_t current ) const noexcept;
+  size_t circlefn( size_t min, size_t max, int64_t current ) const noexcept;
 
 public:
   PlayerBuffer(

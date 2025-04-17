@@ -18,7 +18,6 @@ public slots:
   void onCardsGiven( const QVector<Card *> &cards ) noexcept override;
   void onAttackTurn() noexcept override;
   void onDefenceTurn( const Card &attackCard ) noexcept override;
-  void onTakeCards( const QVector<Card *> &cards ) noexcept override;
 
   void onCardAttackClicked( Card *card ) noexcept;
   void onCardDefenceClicked( Card *card ) noexcept;

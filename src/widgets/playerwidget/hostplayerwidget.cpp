@@ -16,8 +16,6 @@ void HostPlayerWidget::onCardsGiven( const QVector<Card *> &cards ) noexcept {
     this->cards.push_back( cardWidget );
     ui->cardsLayout->addWidget( cardWidget );
   }
-
-  emit cardsTook();
 }
 
 void HostPlayerWidget::onAttackTurn() noexcept {
@@ -31,8 +29,6 @@ void HostPlayerWidget::onAttackTurn() noexcept {
 }
 
 void HostPlayerWidget::onDefenceTurn( const Card &attackCard ) noexcept { }
-
-void HostPlayerWidget::onTakeCards( const QVector<Card *> &cards ) noexcept { }
 
 void HostPlayerWidget::onCardAttackClicked( Card *card ) noexcept {
   emit attack( card );

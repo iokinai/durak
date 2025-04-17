@@ -5,7 +5,8 @@
 namespace durak {
 
 MainWindow::MainWindow( QWidget *parent )
-    : QMainWindow( parent ), ui( new Ui::MainWindow ) {
+    : QMainWindow( parent ), ui( new Ui::MainWindow ),
+      gp( new GamePage( this ) ) {
   ui->setupUi( this );
 }
 MainWindow::~MainWindow() {

@@ -13,8 +13,9 @@ namespace durak {
 
 class GameController : public QObject {
   Q_OBJECT
+
   PlayerBuffer b;
-  FSM fsm;
+  std::unique_ptr<FSM> fsm;
   std::vector<std::unique_ptr<Card>> heap;
 
   std::random_device random_device;
@@ -31,11 +32,11 @@ signals:
   void uiDefenceRequest();
   void uiGameLogicError();
 
-  std::vector<std::unique_ptr<Card>> randomFromHeap() noexcept;
-
 public:
-  GameController( PlayerBuffer &&b, const FSM &fsm,
+  GameController( PlayerBuffer &&b, std::unique_ptr<FSM> fsm,
                   std::vector<std::unique_ptr<Card>> &&heap ) noexcept;
+
+  std::vector<std::unique_ptr<Card>> randomFromHeap() noexcept;
 
   Card current_card();
 
@@ -78,6 +79,10 @@ public:
   //     // do something with card
   //   }
   // }
+
+  inline ~GameController() {
+    QMessageBox::information( nullptr, "123", "123" );
+  }
 };
 
 } // namespace durak

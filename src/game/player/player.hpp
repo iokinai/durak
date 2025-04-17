@@ -33,6 +33,7 @@ protected slots:
 signals:
   void pw_attackTurn();
   void pw_defenceTurn( const Card &attackCard );
+  void pw_takeCards( const QVector<Card *> &cards );
 
   void gc_attacked( Card *attackCard );
   void gc_defended( Card *defenceCard );
