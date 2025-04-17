@@ -3,6 +3,7 @@
 #include <QObject>
 #include <game/cards/card.hpp>
 #include <game/cards/cardhash.hpp>
+#include <memory>
 
 namespace durak {
 
@@ -15,6 +16,7 @@ class Player : public QObject {
 
 protected:
   std::vector<std::unique_ptr<Card>> cards;
+  virtual void takeCards( std::vector<std::unique_ptr<Card>> cards ) = 0;
 
 public:
   virtual ~Player()                                 = default;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QWidget>
+#include <widgets/playerwidget/hostplayerwidget.hpp>
 
 namespace Ui {
 class GamePage;
@@ -12,6 +13,8 @@ class GamePage : public QWidget {
   Q_OBJECT
 
   Ui::GamePage *ui;
+
+  HostPlayerWidget *hpw;
 
 public:
   explicit GamePage( QWidget *parent );

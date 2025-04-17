@@ -34,4 +34,22 @@ PlayerBuffer::PlayerBuffer( PlayerBuffer &&other ) noexcept
     : players( std::move( other.players ) ),
       current( std::move( other.current ) ) { }
 
+size_t PlayerBuffer::size() const noexcept {
+  return players.size();
+}
+
+PlayerBuffer::iterator PlayerBuffer::begin() noexcept {
+  return players.begin();
+}
+PlayerBuffer::iterator PlayerBuffer::end() noexcept {
+  return players.end();
+}
+
+PlayerBuffer::const_iterator PlayerBuffer::cbegin() const noexcept {
+  return players.cbegin();
+}
+PlayerBuffer::const_iterator PlayerBuffer::cend() const noexcept {
+  return players.cend();
+}
+
 } // namespace durak

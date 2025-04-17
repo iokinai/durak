@@ -1,11 +1,16 @@
 #include "gamecontroller.hpp"
+#include <algorithm>
+#include <memory>
+#include <random>
+#include <vector>
 
 namespace durak {
 
-GameController::GameController( PlayerBuffer &&b, const FSM &fsm ) noexcept
-    : b( std::move( b ) ), fsm( fsm ) {
-  //
-}
+GameController::GameController(
+    PlayerBuffer &&b, const FSM &fsm,
+    std::vector<std::unique_ptr<Card>> &&heap ) noexcept
+    : b( std::move( b ) ), fsm( fsm ), heap( std::move( heap ) ),
+      random_device(), random_engine( random_device ) { }
 
 void GameController::start() noexcept {
   std::optional<Action> act = fsm.onEvent( Event::GameStarted );
@@ -20,16 +25,16 @@ void GameController::start() noexcept {
 }
 
 void GameController::doStartActions( Action act ) noexcept {
-  switch ( act ) {
+  // switch ( act ) {
 
-  case Action::ShuffleTheCards :
-    shuffleCards();
-    break;
-  case Action::DealTheCards :
-    dealCards();
-  default :
-    return;
-  }
+  // case Action::ShuffleTheCards :
+  //   shuffleCards();
+  //   break;
+  // case Action::DealTheCards :
+  //   dealCards();
+  // default :
+  //   return;
+  // }
 }
 
 void GameController::shuffleCards() noexcept {
@@ -42,6 +47,29 @@ void GameController::dealCards() noexcept {
 
 Card GameController::attackRequest( std::shared_ptr<Player> player ) noexcept {
   emit uiAttackRequest();
+}
+
+std::vector<std::unique_ptr<Card>> GameController::randomFromHeap() noexcept {
+  std::vector<std::unique_ptr<Card>> res;
+
+  std::uniform_int_distribution<> distr( 0, heap.size() );
+
+  for ( size_t i = 0; i < default_cards_per_player; ++i ) {
+    auto card = std::move( heap[distr( random_engine )] );
+    std::erase( heap, card );
+
+    res.push_back( std::move( card ) );
+  }
+
+  return res;
+}
+
+void GameController::formatTable() noexcept {
+  int playersCardsCount = b.size() * default_cards_per_player;
+
+  for ( const auto &player : b ) {
+    player->takeCards( randomFromHeap() );
+  }
 }
 
 void GameController::gameLoop() noexcept {
@@ -61,6 +89,8 @@ void GameController::gameLoop() noexcept {
       auto action = fsm.onEvent( lastEvent );
 
       switch ( action.value() ) {
+      case Action::GiveCards :
+        break;
       case Action::PlayerAttack : {
         currentCard = attackRequest( currentPlayer );
         lastEvent   = Event::PlayerAttacked;

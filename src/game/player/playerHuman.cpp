@@ -27,9 +27,14 @@ PlayerHuman::PlayerHuman( HostPlayerWidget *playerWidget )
 }
 
 void PlayerHuman::pw_onAttacked( Card *attackCard ) noexcept {
+  disconnect(playerWidget, &PlayerWidget::attack, this, nullptr);
+
   emit gc_attacked( attackCard );
 }
 void PlayerHuman::pw_onDefended( Card *defenceCard ) noexcept {
+  disconnect( playerWidget, &PlayerWidget::defence, this,
+           nullptr );
+
   emit gc_defended( defenceCard );
 }
 

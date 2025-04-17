@@ -3,12 +3,16 @@
 #include <game/player/player.hpp>
 #include <initializer_list>
 #include <memory>
+#include <vector>
 
 namespace durak {
 
 class PlayerBuffer {
   std::vector<std::shared_ptr<Player>> players;
   mutable size_t current;
+
+  using iterator       = std::vector<std::shared_ptr<Player>>::iterator;
+  using const_iterator = std::vector<std::shared_ptr<Player>>::const_iterator;
 
   size_t circlefn( size_t min, size_t max, size_t current ) const noexcept;
 
@@ -19,7 +23,15 @@ public:
   std::shared_ptr<Player> next() const noexcept;
   std::shared_ptr<Player> prev() const noexcept;
 
+  size_t size() const noexcept;
+
   PlayerBuffer( PlayerBuffer &&other ) noexcept;
+
+  iterator begin() noexcept;
+  iterator end() noexcept;
+
+  const_iterator cbegin() const noexcept;
+  const_iterator cend() const noexcept;
 };
 
 } // namespace durak

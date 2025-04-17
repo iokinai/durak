@@ -7,6 +7,7 @@
 #include <game/player/player.hpp>
 #include <game/playerbuffer.hpp>
 #include <memory>
+#include <random>
 
 namespace durak {
 
@@ -14,6 +15,12 @@ class GameController : public QObject {
   Q_OBJECT
   PlayerBuffer b;
   FSM fsm;
+  std::vector<std::unique_ptr<Card>> heap;
+
+  std::random_device random_device;
+  std::mt19937 random_engine;
+
+  static constexpr const int default_cards_per_player = 6;
 
 signals:
   void playerPickCard( const Card &current );
@@ -24,8 +31,11 @@ signals:
   void uiDefenceRequest();
   void uiGameLogicError();
 
+  std::vector<std::unique_ptr<Card>> randomFromHeap() noexcept;
+
 public:
-  GameController( PlayerBuffer &&b, const FSM &fsm ) noexcept;
+  GameController( PlayerBuffer &&b, const FSM &fsm,
+                  std::vector<std::unique_ptr<Card>> &&heap ) noexcept;
 
   Card current_card();
 
@@ -34,6 +44,7 @@ public:
   void start() noexcept;
   void gameLoop() noexcept;
   void dealCards() noexcept;
+  void formatTable() noexcept;
 
   Card attackRequest( std::shared_ptr<Player> player ) noexcept;
   std::optional<Card> defenceRequest( std::shared_ptr<Player> player ) noexcept;
