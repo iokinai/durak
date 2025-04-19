@@ -5,8 +5,6 @@
 #include <memory>
 #include <unordered_map>
 
-#include <QMessageBox>
-
 namespace durak {
 
 class FSM;
@@ -27,10 +25,6 @@ public:
                            &transitions ) noexcept;
 
   friend class FSM;
-
-  // inline ~State() {
-  //   QMessageBox::information( nullptr, "123", "123" );
-  // }
 };
 
 } // namespace durak

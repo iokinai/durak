@@ -10,6 +10,7 @@ enum class Action {
   RoundEnd,
   PlayerTakeCards,
   DrawCards,
+  None,
 };
 
 }

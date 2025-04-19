@@ -32,12 +32,12 @@ PlayerHuman::PlayerHuman( HostPlayerWidget *playerWidget )
 void PlayerHuman::pw_onAttacked( Card *attackCard ) noexcept {
   disconnect( playerWidget, &PlayerWidget::attack, this, nullptr );
 
-  emit gc_attacked( attackCard );
+  emit gc_attacked( moveCard( attackCard ).release() );
 }
 void PlayerHuman::pw_onDefended( Card *defenceCard ) noexcept {
   disconnect( playerWidget, &PlayerWidget::defence, this, nullptr );
 
-  emit gc_defended( defenceCard );
+  emit gc_defended( moveCard( defenceCard ).release() );
 }
 
 void PlayerHuman::gc_onAttackTurn() noexcept {
@@ -66,7 +66,7 @@ QVector<T *> toQVectorRaw( const std::vector<std::unique_ptr<T>> &v ) {
 
 void PlayerHuman::takeCards( std::vector<std::unique_ptr<Card>> cards ) {
   this->cards = std::move( cards );
-  emit pw_takeCards( toQVectorRaw( cards ) );
+  emit pw_takeCards( toQVectorRaw( this->cards ) );
 }
 
 } // namespace durak

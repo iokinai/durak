@@ -17,7 +17,6 @@ class CardWidget : public QWidget {
 
 protected:
   Card *card;
-  Player *player;
 
   QString loadFont() const noexcept;
 

@@ -1,5 +1,4 @@
 #include "gamecontroller.hpp"
-#include <algorithm>
 #include <memory>
 #include <random>
 #include <vector>
@@ -8,7 +7,7 @@ namespace durak {
 
 GameController::GameController(
     PlayerBuffer &&b, std::unique_ptr<FSM> fsm,
-    std::vector<std::unique_ptr<Card>> &&heap ) noexcept
+    std::vector<std::unique_ptr<Card>> heap ) noexcept
     : b( std::move( b ) ), fsm( std::move( fsm ) ), heap( std::move( heap ) ),
       random_device(), random_engine( random_device() ) { }
 
@@ -45,20 +44,38 @@ void GameController::dealCards() noexcept {
   emit uiDealCards();
 }
 
-Card GameController::attackRequest( std::shared_ptr<Player> player ) noexcept {
+std::unique_ptr<Card>
+GameController::attackRequest( std::shared_ptr<Player> player ) noexcept {
+  Card *card;
+
+  QEventLoop waitForAttack;
+
+  connect( player.get(), &Player::gc_attacked, this,
+           [card, &waitForAttack, player = player.get()]( Card *sent ) mutable {
+             disconnect( player, &Player::gc_attacked, nullptr, nullptr );
+             card = sent;
+             waitForAttack.exit();
+           } );
+
+  connect( this, &GameController::uiAttackRequest, player.get(),
+           &Player::gc_onAttackTurn );
+
   emit uiAttackRequest();
+
+  waitForAttack.exec();
+
+  return std::unique_ptr<Card>( card );
 }
 
 std::vector<std::unique_ptr<Card>> GameController::randomFromHeap() noexcept {
   std::vector<std::unique_ptr<Card>> res;
 
-  std::uniform_int_distribution<> distr( 0, heap.size() );
-
   for ( size_t i = 0; i < default_cards_per_player; ++i ) {
-    auto card = std::move( heap[distr( random_engine )] );
-    std::erase( heap, card );
+    std::uniform_int_distribution<> distr( 0, heap.size() - 1 );
 
-    res.push_back( std::move( card ) );
+    size_t idx = distr( random_engine );
+    res.push_back( std::move( heap[idx] ) );
+    heap.erase( heap.begin() + idx );
   }
 
   return res;
@@ -81,8 +98,8 @@ void GameController::gameLoop() noexcept {
   CardSuit currentTrump;
 
   while ( true ) {
-    auto currentPlayer              = b.next();
-    std::optional<Card> currentCard = std::nullopt;
+    auto currentPlayer                = b.next();
+    std::unique_ptr<Card> currentCard = nullptr;
 
     Event lastEvent = Event::GameStarted;
 
@@ -105,18 +122,18 @@ void GameController::gameLoop() noexcept {
         break;
       }
       case Action::NextPlayerDefend : {
-        currentPlayer = b.next();
-        auto result   = defenceRequest( currentPlayer );
+        // currentPlayer = b.next();
+        // auto result   = defenceRequest( currentPlayer );
 
-        if ( result.has_value() ) {
-          if ( !result->beats( currentCard.value(), currentTrump ) ) {
-            emit uiGameLogicError();
-            break;
-          }
+        // if ( result.has_value() ) {
+        //   if ( !result->beats( currentCard.value(), currentTrump ) ) {
+        //     emit uiGameLogicError();
+        //     break;
+        //   }
 
-          lastEvent = Event::PlayerDefended;
-          break;
-        }
+        //   lastEvent = Event::PlayerDefended;
+        //   break;
+        // }
 
         lastEvent = Event::PlayerCantDefend;
         break;

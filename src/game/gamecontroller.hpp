@@ -34,7 +34,7 @@ signals:
 
 public:
   GameController( PlayerBuffer &&b, std::unique_ptr<FSM> fsm,
-                  std::vector<std::unique_ptr<Card>> &&heap ) noexcept;
+                  std::vector<std::unique_ptr<Card>> heap ) noexcept;
 
   std::vector<std::unique_ptr<Card>> randomFromHeap() noexcept;
 
@@ -47,7 +47,8 @@ public:
   void dealCards() noexcept;
   void formatTable() noexcept;
 
-  Card attackRequest( std::shared_ptr<Player> player ) noexcept;
+  std::unique_ptr<Card>
+  attackRequest( std::shared_ptr<Player> player ) noexcept;
   std::optional<Card> defenceRequest( std::shared_ptr<Player> player ) noexcept;
 
   // [[deprecated( "TEST" )]]
@@ -79,10 +80,6 @@ public:
   //     // do something with card
   //   }
   // }
-
-  inline ~GameController() {
-    QMessageBox::information( nullptr, "123", "123" );
-  }
 };
 
 } // namespace durak

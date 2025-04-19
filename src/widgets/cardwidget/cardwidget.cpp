@@ -1,8 +1,10 @@
 #include "cardwidget.hpp"
 #include "./ui_cardwidget.h"
 #include <QFontDatabase>
+#include <QMessageBox>
 #include <QPainter>
 #include <QPixmap>
+#include <QResizeEvent>
 
 namespace durak {
 
@@ -17,10 +19,16 @@ CardWidget::CardWidget( Card *card, QWidget *parent )
     : QWidget( parent ), card( card ), ui( new Ui::CardWidget ) {
   ui->setupUi( this );
 
+  setAutoFillBackground( true );
+  setAttribute( Qt::WA_StyledBackground, true );
+
   QFont font( loadFont(), 20, QFont::Bold );
 
   ui->rankTopText->setFont( font );
-  ui->rankTopText->setText( ( QString::fromStdString( *card ) ) );
+
+  auto cardStr = QString::fromStdString( *card );
+
+  ui->rankTopText->setText( cardStr );
 
   font.setPointSize( 12 );
 

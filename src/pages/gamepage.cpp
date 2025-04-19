@@ -10,20 +10,22 @@ using namespace std::chrono_literals;
 namespace durak {
 
 std::unique_ptr<FSM> createTestFSM() {
+  auto null_state    = std::make_shared<State>( Action::None );
   auto def           = std::make_shared<State>( Action::StartRound );
   auto prepare_round = std::make_shared<State>( Action::GiveCards );
   auto attack        = std::make_shared<State>( Action::PlayerAttack );
   auto defend        = std::make_shared<State>( Action::NextPlayerDefend );
 
   def->setTransitions( { { Event::GameStarted, prepare_round } } );
-  prepare_round->setTransitions( { { Event::GameStarted, attack } } );
+  null_state->setTransitions( { { Event::GameStarted, def } } );
+  prepare_round->setTransitions( { { Event::RoundStarted, attack } } );
   attack->setTransitions( { { Event::PlayerAttacked, defend } } );
   defend->setTransitions( { { Event::PlayerDefended, attack } } );
 
   std::vector<std::shared_ptr<State>> allStates = { def, prepare_round, attack,
-                                                    defend };
+                                                    defend, null_state };
 
-  return std::make_unique<FSM>( def, allStates );
+  return std::make_unique<FSM>( null_state, allStates );
 }
 
 std::vector<std::unique_ptr<Card>> createTestCards() {
@@ -82,19 +84,21 @@ GamePage::GamePage( QWidget *parent )
       hpw( new HostPlayerWidget( this ) ) {
   ui->setupUi( this );
 
-  PlayerBuffer pb = {
-      std::make_shared<PlayerHuman>( new HostPlayerWidget( this ) ) };
+  PlayerBuffer pb = { std::make_shared<PlayerHuman>( hpw ) };
 
-  auto fsm = createTestFSM();
+  auto fsm   = createTestFSM();
+  auto cards = createTestCards();
   // TODO: memory leak
   GameController *ctrl = new GameController( std::move( pb ), std::move( fsm ),
-                                             std::move( createTestCards() ) );
+                                             std::move( cards ) );
 
   QTimer *t = new QTimer( this );
 
   connect( t, &QTimer::timeout, this, [ctrl] { ctrl->start(); } );
 
   t->start( 5s );
+
+  ui->verticalLayout_6->addWidget( hpw );
 }
 
 GamePage::~GamePage() {

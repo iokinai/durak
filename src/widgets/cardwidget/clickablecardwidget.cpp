@@ -6,7 +6,7 @@ namespace durak {
 
 void ClickableCardWidget::mousePressEvent( QMouseEvent *event ) {
   if ( event->button() == Qt::LeftButton ) {
-    emit clicked( std::move( player->moveCard( card ).get() ) );
+    emit clicked( std::move( card ) );
   }
 
   QWidget::mousePressEvent( event );

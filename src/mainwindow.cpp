@@ -8,7 +8,11 @@ MainWindow::MainWindow( QWidget *parent )
     : QMainWindow( parent ), ui( new Ui::MainWindow ),
       gp( new GamePage( this ) ) {
   ui->setupUi( this );
+
+  ui->pages->addWidget( gp );
+  ui->pages->setCurrentWidget( gp );
 }
+
 MainWindow::~MainWindow() {
   delete ui;
 }
