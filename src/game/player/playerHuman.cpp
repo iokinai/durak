@@ -34,6 +34,7 @@ void PlayerHuman::pw_onAttacked( Card *attackCard ) noexcept {
 
   emit gc_attacked( moveCard( attackCard ).release() );
 }
+
 void PlayerHuman::pw_onDefended( Card *defenceCard ) noexcept {
   disconnect( playerWidget, &PlayerWidget::defence, this, nullptr );
 

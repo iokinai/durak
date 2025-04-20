@@ -50,12 +50,13 @@ GameController::attackRequest( std::shared_ptr<Player> player ) noexcept {
 
   QEventLoop waitForAttack;
 
-  connect( player.get(), &Player::gc_attacked, this,
-           [card, &waitForAttack, player = player.get()]( Card *sent ) mutable {
-             disconnect( player, &Player::gc_attacked, nullptr, nullptr );
-             card = sent;
-             waitForAttack.exit();
-           } );
+  connect(
+      player.get(), &Player::gc_attacked, this,
+      [&card, &waitForAttack, player = player.get()]( Card *sent ) mutable {
+        disconnect( player, &Player::gc_attacked, nullptr, nullptr );
+        card = sent;
+        waitForAttack.exit();
+      } );
 
   connect( this, &GameController::uiAttackRequest, player.get(),
            &Player::gc_onAttackTurn );
@@ -64,7 +65,7 @@ GameController::attackRequest( std::shared_ptr<Player> player ) noexcept {
 
   waitForAttack.exec();
 
-  return std::unique_ptr<Card>( card );
+  return std::move( std::unique_ptr<Card>( card ) );
 }
 
 std::vector<std::unique_ptr<Card>> GameController::randomFromHeap() noexcept {
@@ -108,16 +109,22 @@ void GameController::gameLoop() noexcept {
         break;
       }
 
-      auto action = fsm->onEvent( lastEvent );
+      auto action_opt = fsm->onEvent( lastEvent );
 
-      switch ( action.value() ) {
+      if ( !action_opt.has_value() ) {
+        return;
+      }
+
+      auto action = action_opt.value();
+
+      switch ( action ) {
       case Action::GiveCards : {
         formatTable();
         lastEvent = Event::RoundStarted;
         break;
       }
       case Action::PlayerAttack : {
-        currentCard = attackRequest( currentPlayer );
+        currentCard = std::move( attackRequest( currentPlayer ) );
         lastEvent   = Event::PlayerAttacked;
         break;
       }
