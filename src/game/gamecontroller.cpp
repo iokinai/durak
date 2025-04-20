@@ -46,7 +46,7 @@ void GameController::dealCards() noexcept {
 
 std::unique_ptr<Card>
 GameController::attackRequest( std::shared_ptr<Player> player ) noexcept {
-  Card *card;
+  Card *card = nullptr;
 
   QEventLoop waitForAttack;
 
