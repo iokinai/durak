@@ -3,6 +3,7 @@
 #include <QEventLoop>
 #include <QObject>
 #include <game/cards/card.hpp>
+#include <game/defenceresultmarker.hpp>
 #include <game/fsm/fsm.hpp>
 #include <game/player/player.hpp>
 #include <game/playerbuffer.hpp>
@@ -21,6 +22,8 @@ class GameController : public QObject {
   std::random_device random_device;
   std::mt19937 random_engine;
 
+  QEventLoop wait;
+
   static constexpr const int default_cards_per_player = 6;
 
 signals:
@@ -29,8 +32,9 @@ signals:
   void uiShuffleCards();
   void uiDealCards();
   void uiAttackRequest();
-  void uiDefenceRequest();
+  void uiDefenceRequest( Card *attackCard );
   void uiGameLogicError();
+  void cardThrowResult( CardThrowResult result, Card *thrown );
 
 public:
   GameController( PlayerBuffer &&b, std::unique_ptr<FSM> fsm,
@@ -49,7 +53,8 @@ public:
 
   std::unique_ptr<Card>
   attackRequest( std::shared_ptr<Player> player ) noexcept;
-  std::optional<Card> defenceRequest( std::shared_ptr<Player> player ) noexcept;
+  DefenceResult defenceRequest( std::shared_ptr<Player> player,
+                                Card *attackCard ) noexcept;
 
   // [[deprecated( "TEST" )]]
   // void testloop() {

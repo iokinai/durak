@@ -4,7 +4,7 @@
 
 namespace durak {
 
-enum class CardSuit { Heart, Diamond, Spade, Club };
+enum class CardSuit { Heart, Diamond, Spade, Club, DM };
 
 inline std::string suitToString( CardSuit suit ) noexcept {
   switch ( suit ) {
@@ -16,6 +16,8 @@ inline std::string suitToString( CardSuit suit ) noexcept {
     return "}";
   case CardSuit::Club :
     return "]";
+  default :
+    return "";
   }
 }
 

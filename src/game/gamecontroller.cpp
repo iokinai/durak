@@ -1,6 +1,8 @@
 #include "gamecontroller.hpp"
 #include <memory>
+#include <overloads.hpp>
 #include <random>
+#include <variant>
 #include <vector>
 
 namespace durak {
@@ -44,30 +46,6 @@ void GameController::dealCards() noexcept {
   emit uiDealCards();
 }
 
-std::unique_ptr<Card>
-GameController::attackRequest( std::shared_ptr<Player> player ) noexcept {
-  Card *card = nullptr;
-
-  QEventLoop waitForAttack;
-
-  connect(
-      player.get(), &Player::gc_attacked, this,
-      [&card, &waitForAttack, player = player.get()]( Card *sent ) mutable {
-        disconnect( player, &Player::gc_attacked, nullptr, nullptr );
-        card = sent;
-        waitForAttack.exit();
-      } );
-
-  connect( this, &GameController::uiAttackRequest, player.get(),
-           &Player::gc_onAttackTurn );
-
-  emit uiAttackRequest();
-
-  waitForAttack.exec();
-
-  return std::move( std::unique_ptr<Card>( card ) );
-}
-
 std::vector<std::unique_ptr<Card>> GameController::randomFromHeap() noexcept {
   std::vector<std::unique_ptr<Card>> res;
 
@@ -90,9 +68,82 @@ void GameController::formatTable() noexcept {
   }
 }
 
-std::optional<Card>
-GameController::defenceRequest( std::shared_ptr<Player> player ) noexcept {
-  return std::nullopt;
+std::unique_ptr<Card>
+GameController::attackRequest( std::shared_ptr<Player> player ) noexcept {
+  Card *card     = nullptr;
+  bool gotResult = false;
+
+  connect(
+      player.get(), &Player::gc_attacked, this,
+      [&card, this, &gotResult]( Card *sent ) mutable {
+        card      = sent;
+        gotResult = true;
+        wait.exit();
+      },
+      Qt::SingleShotConnection );
+
+  connect( this, &GameController::uiAttackRequest, player.get(),
+           &Player::gc_onAttackTurn );
+
+  connect( this, &GameController::cardThrowResult, player.get(),
+           &Player::gc_cardThrowResult, Qt::SingleShotConnection );
+
+  emit uiAttackRequest();
+
+  if ( !gotResult ) {
+    wait.exec();
+  }
+
+  emit cardThrowResult( CardThrowResult::Accepted, card );
+
+  return std::move( std::unique_ptr<Card>( card ) );
+}
+
+DefenceResult GameController::defenceRequest( std::shared_ptr<Player> player,
+                                              Card *attackCard ) noexcept {
+  Card *card     = nullptr;
+  bool gotResult = false;
+
+  connect(
+      player.get(), &Player::gc_defended, this,
+      [&card, this, &gotResult]( Card *sent ) mutable {
+        card      = sent;
+        gotResult = true;
+        wait.exit();
+      },
+      Qt::SingleShotConnection );
+
+  connect( this, &GameController::uiDefenceRequest, player.get(),
+           &Player::gc_onDefenceTurn );
+
+  connect( this, &GameController::cardThrowResult, player.get(),
+           &Player::gc_cardThrowResult, Qt::SingleShotConnection );
+
+  emit uiDefenceRequest( attackCard );
+
+  if ( !gotResult ) {
+    wait.exec();
+  }
+
+  CardThrowResult result = CardThrowResult::Accepted;
+
+  if ( card && !card->beats( *attackCard, CardSuit::DM ) ) {
+    result = CardThrowResult::RejectedRequiersRepeat;
+  }
+
+  emit cardThrowResult( result, card );
+
+  switch ( result ) {
+  case CardThrowResult::Accepted : {
+    if ( !card ) {
+      return DefenceResultNoCard {};
+    }
+
+    return DefenceResultAccepted { std::move( std::unique_ptr<Card>( card ) ) };
+  }
+  case CardThrowResult::RejectedRequiersRepeat :
+    return DefenceResultRejected {};
+  }
 }
 
 void GameController::gameLoop() noexcept {
@@ -129,20 +180,31 @@ void GameController::gameLoop() noexcept {
         break;
       }
       case Action::NextPlayerDefend : {
-        // currentPlayer = b.next();
-        // auto result   = defenceRequest( currentPlayer );
+        currentPlayer      = b.next();
+        auto resultVariant = defenceRequest( currentPlayer, currentCard.get() );
 
-        // if ( result.has_value() ) {
-        //   if ( !result->beats( currentCard.value(), currentTrump ) ) {
-        //     emit uiGameLogicError();
-        //     break;
-        //   }
-
-        //   lastEvent = Event::PlayerDefended;
-        //   break;
-        // }
-
-        lastEvent = Event::PlayerCantDefend;
+        std::visit(
+            overloads {
+                [&currentCard, &lastEvent]( DefenceResultNoCard ) {
+                  lastEvent = Event::PlayerCantDefend;
+                  QMessageBox::information( nullptr, "Defence",
+                                            "You can't defend" );
+                },
+                [&currentCard, &lastEvent]( DefenceResultAccepted &result ) {
+                  currentCard = std::move( result.card );
+                  lastEvent   = Event::PlayerDefended;
+                  QMessageBox::information(
+                      nullptr, "Defence", QString( "You defended with card" ) );
+                },
+                [&currentCard, &currentPlayer, this]( DefenceResultRejected ) {
+                  currentPlayer = b.prev();
+                  QMessageBox::information(
+                      nullptr, "Defence",
+                      QString( "You can't defend with this card" ) );
+                  emit uiGameLogicError();
+                },
+            },
+            resultVariant );
         break;
       }
       case Action::PlayerTakeCards :

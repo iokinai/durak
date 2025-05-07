@@ -15,9 +15,15 @@
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <item>
-    <layout class="QGridLayout" name="gridLayout">
-     <item row="0" column="0">
-      <layout class="QVBoxLayout" name="verticalLayout_6"/>
+    <layout class="QVBoxLayout" name="verticalLayout" stretch="1,2,1">
+     <item>
+      <layout class="QHBoxLayout" name="aiPlayerLayout"/>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_3"/>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="hostPlayerLayout"/>
      </item>
     </layout>
    </item>

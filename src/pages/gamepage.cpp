@@ -3,7 +3,10 @@
 #include <QTimer>
 #include <game/fsm/state.hpp>
 #include <game/gamecontroller.hpp>
+#include <game/player/playerAI.hpp>
 #include <game/player/playerHuman.hpp>
+#include <widgets/playerwidget/aiplayerwidget.hpp>
+#include <widgets/playerwidget/hostplayerwidget.hpp>
 
 using namespace std::chrono_literals;
 
@@ -20,7 +23,8 @@ std::unique_ptr<FSM> createTestFSM() {
   null_state->setTransitions( { { Event::GameStarted, def } } );
   prepare_round->setTransitions( { { Event::RoundStarted, attack } } );
   attack->setTransitions( { { Event::PlayerAttacked, defend } } );
-  defend->setTransitions( { { Event::PlayerDefended, attack } } );
+  defend->setTransitions( { { Event::PlayerDefended, attack },
+                            { Event::PlayerCantDefend, attack } } );
 
   std::vector<std::shared_ptr<State>> allStates = { def, prepare_round, attack,
                                                     defend, null_state };
@@ -81,10 +85,11 @@ std::vector<std::unique_ptr<Card>> createTestCards() {
 
 GamePage::GamePage( QWidget *parent )
     : QWidget( parent ), ui( new Ui::GamePage ),
-      hpw( new HostPlayerWidget( this ) ) {
+      hpw( new HostPlayerWidget( this ) ), apw( new AIPlayerWidget( this ) ) {
   ui->setupUi( this );
 
-  PlayerBuffer pb = { std::make_shared<PlayerHuman>( hpw ) };
+  PlayerBuffer pb = { std::make_shared<PlayerHuman>( hpw ),
+                      std::make_shared<PlayerAI>( apw ) };
 
   auto fsm   = createTestFSM();
   auto cards = createTestCards();
@@ -98,7 +103,8 @@ GamePage::GamePage( QWidget *parent )
 
   t->start( 5s );
 
-  ui->verticalLayout_6->addWidget( hpw );
+  ui->hostPlayerLayout->addWidget( hpw );
+  ui->aiPlayerLayout->addWidget( apw );
 }
 
 GamePage::~GamePage() {

@@ -19,6 +19,6 @@ void ClickableCardWidget::returnCard( std::unique_ptr<Card> card ) noexcept {
 }
 
 ClickableCardWidget::ClickableCardWidget( Card *card, QWidget *parent )
-    : CardWidget( card, parent ) { }
+    : CardWidget( card, parent, true ) { }
 
 } // namespace durak

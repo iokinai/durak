@@ -1,23 +1,39 @@
 #include "playerAI.hpp"
 
-#include <algorithm>
-
 namespace durak {
 
-// void PlayerAI::onPickCard( const Card &c, CardSuit trump ) {
-//   auto found = std::find_if( cards.begin(), cards.end(),
-//                              [&c, trump]( std::unique_ptr<Card> &card ) {
-//                                return card->beats( c, trump );
-//                              } );
+void PlayerAI::gc_onAttackTurn() noexcept {
+  if ( cards.empty() ) {
+    return;
+  }
 
-//   if ( found == cards.end() ) {
-//     // emit cardPickResult( nullptr );
-//     return;
-//   }
+  emit gc_attacked( cards.front().get() );
+}
 
-//   cards.erase( found );
+void PlayerAI::gc_onDefenceTurn( Card *attackCard ) noexcept {
+  auto def = std::find_if( cards.begin(), cards.end(),
+                           [&attackCard]( const auto &card ) {
+                             return ( *card > *attackCard ) &&
+                                    card->getSuit() == attackCard->getSuit();
+                           } );
 
-//   // emit cardPickResult( std::move( *found ) );
-// }
+  Card *defCard = nullptr;
+
+  if ( def != cards.end() ) {
+    defCard = def->get();
+  }
+
+  emit gc_defended( defCard );
+}
+
+PlayerAI::PlayerAI( AIPlayerWidget *playerWidget )
+    : playerWidget( playerWidget ) {
+
+  connect( this, &PlayerAI::pw_takeCards, playerWidget,
+           &AIPlayerWidget::onCardsGiven );
+
+  connect( this, &PlayerAI::pw_handleThrowResult, playerWidget,
+           &AIPlayerWidget::throwResult );
+}
 
 } // namespace durak

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QObject>
+#include <game/card_throw_result.hpp>
 #include <game/cards/card.hpp>
 #include <game/cards/cardhash.hpp>
 #include <memory>
@@ -15,26 +16,34 @@ class Player : public QObject {
   friend class GameController;
 
 protected:
+  template <typename T>
+  QVector<T *> toQVectorRaw( const std::vector<std::unique_ptr<T>> &v ) {
+    QVector<T *> result;
+    result.reserve( v.size() );
+    for ( const auto &item : v ) {
+      result.append( item.get() );
+    }
+    return result;
+  }
+
   std::vector<std::unique_ptr<Card>> cards;
-  virtual void takeCards( std::vector<std::unique_ptr<Card>> cards ) = 0;
+  virtual void takeCards( std::vector<std::unique_ptr<Card>> cards );
 
 public:
-  virtual ~Player()                                 = default;
-  virtual std::unique_ptr<Card> moveCard( Card *c ) = 0;
+  virtual ~Player() = default;
+
+  virtual std::unique_ptr<Card> moveCard( Card *c );
 
 protected slots:
-  // virtual void onPickCard( const Card &c, CardSuit trump ) = 0;
-  virtual void gc_onAttackTurn() noexcept                          = 0;
-  virtual void gc_onDefenceTurn( const Card &attackCard ) noexcept = 0;
+  virtual void gc_onAttackTurn() noexcept                    = 0;
+  virtual void gc_onDefenceTurn( Card *attackCard ) noexcept = 0;
 
-  virtual void pw_onAttacked( Card *attackCard ) noexcept  = 0;
-  virtual void pw_onDefended( Card *defenceCard ) noexcept = 0;
+  virtual void gc_cardThrowResult( CardThrowResult result,
+                                   Card *thrown_card ) noexcept;
 
 signals:
-  void pw_attackTurn();
-  void pw_defenceTurn( const Card &attackCard );
   void pw_takeCards( const QVector<Card *> &cards );
-
+  void pw_handleThrowResult( CardThrowResult result, Card *thrown_card );
   void gc_attacked( Card *attackCard );
   void gc_defended( Card *defenceCard );
 };

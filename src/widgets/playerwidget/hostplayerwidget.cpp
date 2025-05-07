@@ -13,11 +13,7 @@ HostPlayerWidget::HostPlayerWidget( QWidget *parent )
 }
 
 void HostPlayerWidget::onCardsGiven( const QVector<Card *> &cards ) noexcept {
-  for ( auto card : cards ) {
-    auto cardWidget = new ClickableCardWidget( card, this );
-    this->cards.push_back( cardWidget );
-    ui->cardsLayout->addWidget( cardWidget, 0, Qt::AlignCenter );
-  }
+  cardsGivenWithType<ClickableCardWidget>( ui, cards );
 }
 
 void HostPlayerWidget::onAttackTurn() noexcept {
@@ -25,20 +21,34 @@ void HostPlayerWidget::onAttackTurn() noexcept {
     auto clickableCard = dynamic_cast<ClickableCardWidget *>( card );
     if ( clickableCard ) {
       connect( clickableCard, &ClickableCardWidget::clicked, this,
-               &HostPlayerWidget::onCardAttackClicked );
+               &HostPlayerWidget::onCardAttackClicked, Qt::UniqueConnection );
     }
   }
 }
 
-void HostPlayerWidget::onDefenceTurn( const Card &attackCard ) noexcept { }
+void HostPlayerWidget::onDefenceTurn( Card *attackCard ) noexcept { }
 
 void HostPlayerWidget::onCardAttackClicked( Card *card ) noexcept {
   QString cardString =
       QString::number( card->getRank() ) + "\t" +
       QString::fromStdString( suitToString( card->getSuit() ) );
 
-  QMessageBox::information( this, "Clicked card", cardString );
+  // QMessageBox::information( this, "Clicked card", cardString );
   emit attack( card );
+}
+
+void HostPlayerWidget::throwResult( CardThrowResult result,
+                                    Card *thrown_card ) noexcept {
+  switch ( result ) {
+
+  case CardThrowResult::Accepted : {
+    onAcceptedCard( ui, thrown_card );
+
+    break;
+  }
+  case CardThrowResult::RejectedRequiersRepeat :
+    break;
+  }
 }
 
 void HostPlayerWidget::onCardDefenceClicked( Card *card ) noexcept { }

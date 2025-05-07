@@ -1,18 +1,17 @@
 #pragma once
 
-#include <widgets/cardwidget/clickablecardwidget.hpp>
 #include <widgets/playerwidget/playerwidget.hpp>
 
 namespace Ui {
-class HostPlayerWidget;
+class AIPlayerWidget;
 }
 
 namespace durak {
 
-class HostPlayerWidget : public PlayerWidget {
+class AIPlayerWidget : public PlayerWidget {
   Q_OBJECT
 
-  Ui::HostPlayerWidget *ui;
+  Ui::AIPlayerWidget *ui;
 
 public slots:
   void onCardsGiven( const QVector<Card *> &cards ) noexcept override;
@@ -21,12 +20,9 @@ public slots:
   virtual void throwResult( CardThrowResult result,
                             Card *thrown_card ) noexcept override;
 
-  void onCardAttackClicked( Card *card ) noexcept;
-  void onCardDefenceClicked( Card *card ) noexcept;
-
 public:
-  explicit HostPlayerWidget( QWidget *parent = nullptr );
-  ~HostPlayerWidget() override;
+  explicit AIPlayerWidget( QWidget *parent = nullptr );
+  ~AIPlayerWidget() override;
 };
 
 } // namespace durak

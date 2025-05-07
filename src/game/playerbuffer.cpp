@@ -5,11 +5,11 @@ namespace durak {
 
 size_t PlayerBuffer::circlefn( size_t min, size_t max,
                                int64_t current ) const noexcept {
-  if ( current == max + 1 ) {
+  if ( current > max ) {
     return min;
   }
 
-  if ( current == min - 1 ) {
+  if ( current < min ) {
     return max;
   }
 
@@ -21,7 +21,7 @@ PlayerBuffer::PlayerBuffer(
     : players( players.begin(), players.end() ), current( -1 ) { }
 
 std::shared_ptr<Player> PlayerBuffer::next() const noexcept {
-  current = circlefn( 0, players.size(), ++current );
+  current = circlefn( 0, players.size() - 1, ++current );
   return players[current];
 }
 

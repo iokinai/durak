@@ -15,6 +15,7 @@ class GamePage : public QWidget {
   Ui::GamePage *ui;
 
   HostPlayerWidget *hpw;
+  AIPlayerWidget *apw;
 
 public:
   explicit GamePage( QWidget *parent );
