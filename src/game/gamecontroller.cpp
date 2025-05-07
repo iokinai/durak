@@ -1,4 +1,5 @@
 #include "gamecontroller.hpp"
+#include <QCoreApplication>
 #include <memory>
 #include <overloads.hpp>
 #include <random>
@@ -11,7 +12,10 @@ GameController::GameController(
     PlayerBuffer &&b, std::unique_ptr<FSM> fsm,
     std::vector<std::unique_ptr<Card>> heap ) noexcept
     : b( std::move( b ) ), fsm( std::move( fsm ) ), heap( std::move( heap ) ),
-      random_device(), random_engine( random_device() ) { }
+      random_device(), random_engine( random_device() ) {
+  connect( qApp, &QCoreApplication::aboutToQuit, this,
+           [this]( auto ) { wait.quit(); } );
+}
 
 void GameController::start() noexcept {
   std::optional<Action> act = fsm->onEvent( Event::GameStarted );
@@ -68,7 +72,7 @@ void GameController::formatTable() noexcept {
   }
 }
 
-std::unique_ptr<Card>
+WaitResult<std::unique_ptr<Card>>
 GameController::attackRequest( std::shared_ptr<Player> player ) noexcept {
   Card *card     = nullptr;
   bool gotResult = false;
@@ -94,13 +98,18 @@ GameController::attackRequest( std::shared_ptr<Player> player ) noexcept {
     wait.exec();
   }
 
+  if ( !gotResult ) {
+    return WaitResultCritical {};
+  }
+
   emit cardThrowResult( CardThrowResult::Accepted, card );
 
   return std::move( std::unique_ptr<Card>( card ) );
 }
 
-DefenceResult GameController::defenceRequest( std::shared_ptr<Player> player,
-                                              Card *attackCard ) noexcept {
+WaitResult<DefenceResult>
+GameController::defenceRequest( std::shared_ptr<Player> player,
+                                Card *attackCard ) noexcept {
   Card *card     = nullptr;
   bool gotResult = false;
 
@@ -123,6 +132,10 @@ DefenceResult GameController::defenceRequest( std::shared_ptr<Player> player,
 
   if ( !gotResult ) {
     wait.exec();
+  }
+
+  if ( !gotResult ) {
+    return WaitResultCritical {};
   }
 
   CardThrowResult result = CardThrowResult::Accepted;
@@ -175,13 +188,26 @@ void GameController::gameLoop() noexcept {
         break;
       }
       case Action::PlayerAttack : {
-        currentCard = std::move( attackRequest( currentPlayer ) );
+        auto waitResult = attackRequest( currentPlayer );
+        auto result     = std::get_if<std::unique_ptr<Card>>( &waitResult );
+
+        if ( !result ) {
+          return;
+        }
+
+        currentCard = std::move( *result );
         lastEvent   = Event::PlayerAttacked;
         break;
       }
       case Action::NextPlayerDefend : {
-        currentPlayer      = b.next();
-        auto resultVariant = defenceRequest( currentPlayer, currentCard.get() );
+        currentPlayer   = b.next();
+        auto waitResult = defenceRequest( currentPlayer, currentCard.get() );
+
+        auto resultVariant = std::get_if<DefenceResult>( &waitResult );
+
+        if ( !resultVariant ) {
+          return;
+        }
 
         std::visit(
             overloads {
@@ -204,7 +230,7 @@ void GameController::gameLoop() noexcept {
                   emit uiGameLogicError();
                 },
             },
-            resultVariant );
+            *resultVariant );
         break;
       }
       case Action::PlayerTakeCards :

@@ -26,14 +26,19 @@ void HostPlayerWidget::onAttackTurn() noexcept {
   }
 }
 
-void HostPlayerWidget::onDefenceTurn( Card *attackCard ) noexcept { }
+void HostPlayerWidget::onDefenceTurn( Card *attackCard ) noexcept {
+  QMessageBox::critical( this, "Defence Turn",
+                         QString( "You are attacked by %1 of %2" )
+                             .arg( QString::number( attackCard->getRank() ) )
+                             .arg( QString::fromStdString(
+                                 suitToString( attackCard->getSuit() ) ) ) );
+}
 
 void HostPlayerWidget::onCardAttackClicked( Card *card ) noexcept {
   QString cardString =
       QString::number( card->getRank() ) + "\t" +
       QString::fromStdString( suitToString( card->getSuit() ) );
 
-  // QMessageBox::information( this, "Clicked card", cardString );
   emit attack( card );
 }
 

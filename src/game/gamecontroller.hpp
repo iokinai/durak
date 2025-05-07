@@ -7,6 +7,7 @@
 #include <game/fsm/fsm.hpp>
 #include <game/player/player.hpp>
 #include <game/playerbuffer.hpp>
+#include <game/waitresult.hpp>
 #include <memory>
 #include <random>
 
@@ -51,40 +52,10 @@ public:
   void dealCards() noexcept;
   void formatTable() noexcept;
 
-  std::unique_ptr<Card>
+  WaitResult<std::unique_ptr<Card>>
   attackRequest( std::shared_ptr<Player> player ) noexcept;
-  DefenceResult defenceRequest( std::shared_ptr<Player> player,
-                                Card *attackCard ) noexcept;
-
-  // [[deprecated( "TEST" )]]
-  // void testloop() {
-  //   while ( true ) {
-  //     auto cc     = current_card();
-  //     auto player = b.next();
-  //     QEventLoop el;
-  //     Card picked;
-
-  //     connect( this, &GameController::playerPickCard, player.get(),
-  //              &Player::onPickCard );
-
-  //     connect( player.get(), &Player::cardPicked, this,
-  //              [&el, &picked]( const Card &result ) {
-  //                picked = result;
-  //                el.quit();
-  //              } );
-
-  //     emit playerPickCard( cc );
-
-  //     el.exec();
-
-  //     disconnect( this, &GameController::playerPickCard, player.get(),
-  //                 &Player::onPickCard );
-
-  //     disconnect( player.get(), &Player::cardPicked, this, nullptr );
-
-  //     // do something with card
-  //   }
-  // }
+  WaitResult<DefenceResult> defenceRequest( std::shared_ptr<Player> player,
+                                            Card *attackCard ) noexcept;
 };
 
 } // namespace durak
