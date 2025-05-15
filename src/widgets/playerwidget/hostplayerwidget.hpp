@@ -9,10 +9,24 @@ class HostPlayerWidget;
 
 namespace durak {
 
+enum class UiMode {
+  Idle,
+  Attack,
+  Defence,
+};
+
 class HostPlayerWidget : public PlayerWidget {
   Q_OBJECT
 
   Ui::HostPlayerWidget *ui;
+
+  UiMode mode = UiMode::Idle;
+  Card *currentCard;
+
+  void onCardAttackClicked( Card *card ) noexcept;
+  void onCardDefenceClicked( Card *card, Card *attack ) noexcept;
+
+  void prepareConnects() noexcept;
 
 public slots:
   void onCardsGiven( const QVector<Card *> &cards ) noexcept override;
@@ -20,9 +34,6 @@ public slots:
   void onDefenceTurn( Card *attackCard ) noexcept override;
   virtual void throwResult( CardThrowResult result,
                             Card *thrown_card ) noexcept override;
-
-  void onCardAttackClicked( Card *card ) noexcept;
-  void onCardDefenceClicked( Card *card ) noexcept;
 
 public:
   explicit HostPlayerWidget( QWidget *parent = nullptr );

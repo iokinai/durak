@@ -1,6 +1,7 @@
 #include "gamepage.hpp"
 #include "./ui_gamepage.h"
 #include <QTimer>
+#include <clearlayout.hpp>
 #include <game/fsm/state.hpp>
 #include <game/gamecontroller.hpp>
 #include <game/player/playerAI.hpp>
@@ -97,6 +98,9 @@ GamePage::GamePage( QWidget *parent )
   GameController *ctrl = new GameController( std::move( pb ), std::move( fsm ),
                                              std::move( cards ) );
 
+  connect( ctrl, &GameController::putCardOnTable, this,
+           &GamePage::onPutCardOnTable );
+
   QTimer *t = new QTimer( this );
 
   connect( t, &QTimer::timeout, this, [ctrl] { ctrl->start(); } );
@@ -105,6 +109,17 @@ GamePage::GamePage( QWidget *parent )
 
   ui->hostPlayerLayout->addWidget( hpw );
   ui->aiPlayerLayout->addWidget( apw );
+}
+
+void GamePage::onPutCardOnTable( Card *card ) noexcept {
+  if ( !card ) {
+    clearLayout( ui->horizontalLayout_3 );
+    return;
+  }
+
+  auto setWidget = new CardWidget( card, this, true );
+  setWidget->setFixedSize( QSize( 100, 140 ) );
+  ui->horizontalLayout_3->addWidget( setWidget );
 }
 
 GamePage::~GamePage() {

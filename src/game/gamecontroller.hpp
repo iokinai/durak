@@ -36,6 +36,7 @@ signals:
   void uiDefenceRequest( Card *attackCard );
   void uiGameLogicError();
   void cardThrowResult( CardThrowResult result, Card *thrown );
+  void putCardOnTable( Card *card );
 
 public:
   GameController( PlayerBuffer &&b, std::unique_ptr<FSM> fsm,

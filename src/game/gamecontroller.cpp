@@ -103,6 +103,7 @@ GameController::attackRequest( std::shared_ptr<Player> player ) noexcept {
   }
 
   emit cardThrowResult( CardThrowResult::Accepted, card );
+  emit putCardOnTable( card );
 
   return std::move( std::unique_ptr<Card>( card ) );
 }
@@ -145,6 +146,8 @@ GameController::defenceRequest( std::shared_ptr<Player> player,
   }
 
   emit cardThrowResult( result, card );
+
+  emit putCardOnTable( nullptr );
 
   switch ( result ) {
   case CardThrowResult::Accepted : {

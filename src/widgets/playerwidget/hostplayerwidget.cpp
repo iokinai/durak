@@ -4,6 +4,7 @@
 #include <widgets/cardwidget/clickablecardwidget.hpp>
 
 #include <QMessageBox>
+#include <QTimer>
 
 namespace durak {
 
@@ -12,18 +13,36 @@ HostPlayerWidget::HostPlayerWidget( QWidget *parent )
   ui->setupUi( this );
 }
 
-void HostPlayerWidget::onCardsGiven( const QVector<Card *> &cards ) noexcept {
-  cardsGivenWithType<ClickableCardWidget>( ui, cards );
+void HostPlayerWidget::onCardsGiven(
+    const QVector<Card *> &givenCards ) noexcept {
+  cardsGivenWithType<ClickableCardWidget>( ui, givenCards );
+  prepareConnects();
 }
 
-void HostPlayerWidget::onAttackTurn() noexcept {
+void HostPlayerWidget::prepareConnects() noexcept {
   for ( auto card : cards ) {
     auto clickableCard = dynamic_cast<ClickableCardWidget *>( card );
     if ( clickableCard ) {
       connect( clickableCard, &ClickableCardWidget::clicked, this,
-               &HostPlayerWidget::onCardAttackClicked, Qt::UniqueConnection );
+               [this]( Card *c ) {
+                 switch ( mode ) {
+                 case UiMode::Attack :
+                   onCardAttackClicked( c );
+                   break;
+
+                 case UiMode::Defence :
+                   onCardDefenceClicked( c, currentCard );
+                   break;
+                 case UiMode::Idle :
+                   break;
+                 }
+               } );
     }
   }
+}
+
+void HostPlayerWidget::onAttackTurn() noexcept {
+  mode = UiMode::Attack;
 }
 
 void HostPlayerWidget::onDefenceTurn( Card *attackCard ) noexcept {
@@ -32,6 +51,9 @@ void HostPlayerWidget::onDefenceTurn( Card *attackCard ) noexcept {
                              .arg( QString::number( attackCard->getRank() ) )
                              .arg( QString::fromStdString(
                                  suitToString( attackCard->getSuit() ) ) ) );
+
+  mode        = UiMode::Defence;
+  currentCard = attackCard;
 }
 
 void HostPlayerWidget::onCardAttackClicked( Card *card ) noexcept {
@@ -39,7 +61,23 @@ void HostPlayerWidget::onCardAttackClicked( Card *card ) noexcept {
       QString::number( card->getRank() ) + "\t" +
       QString::fromStdString( suitToString( card->getSuit() ) );
 
+  mode = UiMode::Idle;
+
   emit attack( card );
+}
+
+void HostPlayerWidget::onCardDefenceClicked( Card *card,
+                                             Card *attack ) noexcept {
+
+  if ( !card->beats( *attack, CardSuit::DM ) ) {
+    QMessageBox::critical( this, "Does not beat",
+                           "This card does not beat the attack one" );
+    return;
+  }
+
+  mode        = UiMode::Idle;
+  currentCard = nullptr;
+  emit defence( card );
 }
 
 void HostPlayerWidget::throwResult( CardThrowResult result,
@@ -55,8 +93,6 @@ void HostPlayerWidget::throwResult( CardThrowResult result,
     break;
   }
 }
-
-void HostPlayerWidget::onCardDefenceClicked( Card *card ) noexcept { }
 
 HostPlayerWidget::~HostPlayerWidget() {
   delete ui;
