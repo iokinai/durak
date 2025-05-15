@@ -112,14 +112,18 @@ GamePage::GamePage( QWidget *parent )
 }
 
 void GamePage::onPutCardOnTable( Card *card ) noexcept {
-  if ( !card ) {
-    clearLayout( ui->horizontalLayout_3 );
+  clearLayout( ui->horizontalLayout_3 );
+
+  if ( !card )
     return;
-  }
 
   auto setWidget = new CardWidget( card, this, true );
-  setWidget->setFixedSize( QSize( 100, 140 ) );
-  ui->horizontalLayout_3->addWidget( setWidget );
+  setWidget->setMinimumSize( 100, 140 );
+  setWidget->setSizePolicy( QSizePolicy::Preferred, QSizePolicy::Preferred );
+
+  ui->horizontalLayout_3->addStretch();
+  ui->horizontalLayout_3->addWidget( setWidget, 0, Qt::AlignCenter );
+  ui->horizontalLayout_3->addStretch();
 }
 
 GamePage::~GamePage() {

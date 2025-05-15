@@ -87,7 +87,7 @@ GameController::attackRequest( std::shared_ptr<Player> player ) noexcept {
       Qt::SingleShotConnection );
 
   connect( this, &GameController::uiAttackRequest, player.get(),
-           &Player::gc_onAttackTurn );
+           &Player::gc_onAttackTurn, Qt::SingleShotConnection );
 
   connect( this, &GameController::cardThrowResult, player.get(),
            &Player::gc_cardThrowResult, Qt::SingleShotConnection );
@@ -124,7 +124,7 @@ GameController::defenceRequest( std::shared_ptr<Player> player,
       Qt::SingleShotConnection );
 
   connect( this, &GameController::uiDefenceRequest, player.get(),
-           &Player::gc_onDefenceTurn );
+           &Player::gc_onDefenceTurn, Qt::SingleShotConnection );
 
   connect( this, &GameController::cardThrowResult, player.get(),
            &Player::gc_cardThrowResult, Qt::SingleShotConnection );
@@ -217,19 +217,20 @@ void GameController::gameLoop() noexcept {
                 [&currentCard, &lastEvent]( DefenceResultNoCard ) {
                   lastEvent = Event::PlayerCantDefend;
                   QMessageBox::information( nullptr, "Defence",
-                                            "You can't defend" );
+                                            "Player can't defend" );
                 },
                 [&currentCard, &lastEvent]( DefenceResultAccepted &result ) {
                   currentCard = std::move( result.card );
                   lastEvent   = Event::PlayerDefended;
                   QMessageBox::information(
-                      nullptr, "Defence", QString( "You defended with card" ) );
+                      nullptr, "Defence",
+                      QString( "Player defended with card" ) );
                 },
                 [&currentCard, &currentPlayer, this]( DefenceResultRejected ) {
                   currentPlayer = b.prev();
                   QMessageBox::information(
                       nullptr, "Defence",
-                      QString( "You can't defend with this card" ) );
+                      QString( "Player can't defend with this card" ) );
                   emit uiGameLogicError();
                 },
             },
