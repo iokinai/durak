@@ -21,8 +21,7 @@ HostPlayerWidget::HostPlayerWidget( DeckWidget *widget, QWidget *parent )
   } );
 }
 
-void HostPlayerWidget::onCardsGiven(
-    const QVector<Card *> &givenCards ) noexcept {
+void HostPlayerWidget::onCardsGiven( QVector<Card *> &givenCards ) noexcept {
   cardsGivenWithType<ClickableCardWidget>( ui, givenCards );
   prepareConnects();
 }

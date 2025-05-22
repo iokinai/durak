@@ -84,7 +84,7 @@ void GameController::formatTable() noexcept {
   int playersCardsCount = b.size() * default_cards_per_player;
 
   for ( const auto &player : b ) {
-    player->takeCards( randomFromHeap() );
+    player->takeCards( std::move( randomFromHeap() ) );
   }
 
   deck->putCards( heap );

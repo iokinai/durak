@@ -17,7 +17,7 @@ class Player : public QObject {
 
 protected:
   template <typename T>
-  QVector<T *> toQVectorRaw( const std::vector<std::unique_ptr<T>> &v ) {
+  QVector<T *> toQVectorRaw( std::vector<std::unique_ptr<T>> &v ) {
     QVector<T *> result;
     result.reserve( v.size() );
     for ( const auto &item : v ) {
@@ -27,7 +27,7 @@ protected:
   }
 
   std::vector<std::unique_ptr<Card>> cards;
-  virtual void takeCards( std::vector<std::unique_ptr<Card>> cards );
+  virtual void takeCards( std::vector<std::unique_ptr<Card>> &&cards );
 
 public:
   virtual ~Player() = default;
@@ -44,7 +44,7 @@ protected slots:
   virtual void pw_takeCardFromDeck( Card *card ) noexcept = 0;
 
 signals:
-  void pw_takeCards( const QVector<Card *> &cards );
+  void pw_takeCards( QVector<Card *> &cards );
   void pw_handleThrowResult( CardThrowResult result, Card *thrown_card );
   void gc_attacked( Card *attackCard );
   void gc_defended( Card *defenceCard );

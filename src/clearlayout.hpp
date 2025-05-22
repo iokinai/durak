@@ -12,7 +12,7 @@ inline void clearLayout( QLayout *layout ) {
   while ( QLayoutItem *item = layout->takeAt( 0 ) ) {
     if ( QWidget *widget = item->widget() ) {
       widget->hide();
-      widget->deleteLater(); // Важно: безопасное удаление
+      widget->deleteLater();
     }
     delete item;
   }

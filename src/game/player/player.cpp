@@ -16,9 +16,13 @@ std::unique_ptr<Card> Player::moveCard( Card *c ) {
   return card;
 }
 
-void Player::takeCards( std::vector<std::unique_ptr<Card>> cards ) {
-  this->cards = std::move( cards );
-  emit pw_takeCards( toQVectorRaw( this->cards ) );
+void Player::takeCards( std::vector<std::unique_ptr<Card>> &&cards ) {
+  for ( auto &card : cards ) {
+    this->cards.emplace_back( std::move( card ) );
+  }
+
+  auto tmp = toQVectorRaw( this->cards );
+  emit pw_takeCards( tmp );
 }
 
 void Player::gc_cardThrowResult( CardThrowResult result,

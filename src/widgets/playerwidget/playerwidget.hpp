@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QObject>
+#include <clearlayout.hpp>
 #include <game/card_throw_result.hpp>
 #include <game/cards/card.hpp>
 #include <widgets/cardwidget/cardwidget.hpp>
@@ -16,7 +17,9 @@ protected:
   QVector<CardWidget *> cards;
 
   template <std::derived_from<CardWidget> T, class Ui>
-  void cardsGivenWithType( Ui *ui, const QVector<Card *> &cards ) noexcept {
+  void cardsGivenWithType( Ui *ui, QVector<Card *> &cards ) noexcept {
+    this->cards.clear();
+    clearLayout( ui->cardsLayout );
     for ( auto card : cards ) {
       auto cardWidget = new T( card, this );
       this->cards.push_back( cardWidget );
@@ -46,11 +49,11 @@ public:
   virtual ~PlayerWidget() = default;
 
 public slots:
-  virtual void onCardsGiven( const QVector<Card *> &cards ) noexcept = 0;
-  virtual void onAttackTurn() noexcept                               = 0;
-  virtual void onDefenceTurn( Card *attackCard ) noexcept            = 0;
+  virtual void onCardsGiven( QVector<Card *> &cards ) noexcept = 0;
+  virtual void onAttackTurn() noexcept                         = 0;
+  virtual void onDefenceTurn( Card *attackCard ) noexcept      = 0;
   virtual void throwResult( CardThrowResult result,
-                            Card *thrown_card ) noexcept             = 0;
+                            Card *thrown_card ) noexcept       = 0;
 
 signals:
   void attack( Card *card );

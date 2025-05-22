@@ -1,6 +1,7 @@
 #include "deckwidget.hpp"
 #include "./ui_deckwidget.h"
 #include <QMouseEvent>
+#include <random>
 
 namespace durak {
 
@@ -51,11 +52,24 @@ void DeckWidget::mousePressEvent( QMouseEvent *event ) {
 }
 
 void DeckWidget::putCards( std::vector<std::unique_ptr<Card>> &cards ) {
+  std::random_device rd;
+  std::mt19937 g( rd() );
+  std::shuffle( cards.begin(), cards.end(), g );
+
   for ( auto &card : cards ) {
     deck.emplace( std::move( card ) );
   }
 
-  ui->verticalLayout->addWidget( getCardTopWidget() );
+  if ( currentTopCardWidget ) {
+    ui->verticalLayout->removeWidget( currentTopCardWidget );
+    currentTopCardWidget->deleteLater();
+    currentTopCardWidget = nullptr;
+  }
+
+  if ( !deck.empty() ) {
+    currentTopCardWidget = getCardTopWidget();
+    ui->verticalLayout->addWidget( currentTopCardWidget );
+  }
 }
 
 } // namespace durak

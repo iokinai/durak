@@ -8,7 +8,7 @@ AIPlayerWidget::AIPlayerWidget( QWidget *parent )
   ui->setupUi( this );
 }
 
-void AIPlayerWidget::onCardsGiven( const QVector<Card *> &cards ) noexcept {
+void AIPlayerWidget::onCardsGiven( QVector<Card *> &cards ) noexcept {
   cardsGivenWithType<CardWidget>( ui, cards );
 }
 

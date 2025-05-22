@@ -32,7 +32,7 @@ class HostPlayerWidget : public PlayerWidget {
   void prepareConnects() noexcept;
 
 public slots:
-  void onCardsGiven( const QVector<Card *> &cards ) noexcept override;
+  void onCardsGiven( QVector<Card *> &cards ) noexcept override;
   void onAttackTurn() noexcept override;
   void onDefenceTurn( Card *attackCard ) noexcept override;
   virtual void throwResult( CardThrowResult result,
