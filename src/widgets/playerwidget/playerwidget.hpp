@@ -55,6 +55,8 @@ public slots:
 signals:
   void attack( Card *card );
   void defence( Card *card );
+
+  void player_playerTakeCardFromDeck( Card *card );
 };
 
 } // namespace durak

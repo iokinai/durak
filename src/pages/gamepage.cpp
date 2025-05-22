@@ -86,8 +86,10 @@ std::vector<std::unique_ptr<Card>> createTestCards() {
 
 GamePage::GamePage( QWidget *parent )
     : QWidget( parent ), ui( new Ui::GamePage ),
-      hpw( new HostPlayerWidget( this ) ), apw( new AIPlayerWidget( this ) ) {
+      hpw( new HostPlayerWidget( this->dw, this ) ),
+      apw( new AIPlayerWidget( this ) ), dw( new DeckWidget( this ) ) {
   ui->setupUi( this );
+  dw->setFixedSize( 100, 140 );
 
   PlayerBuffer pb = { std::make_shared<PlayerHuman>( hpw ),
                       std::make_shared<PlayerAI>( apw ) };
@@ -96,7 +98,7 @@ GamePage::GamePage( QWidget *parent )
   auto cards = createTestCards();
   // TODO: memory leak
   GameController *ctrl = new GameController( std::move( pb ), std::move( fsm ),
-                                             std::move( cards ) );
+                                             std::move( cards ), dw );
 
   connect( ctrl, &GameController::putCardOnTable, this,
            &GamePage::onPutCardOnTable );
@@ -109,6 +111,7 @@ GamePage::GamePage( QWidget *parent )
 
   ui->hostPlayerLayout->addWidget( hpw );
   ui->aiPlayerLayout->addWidget( apw );
+  ui->deckLayout->addWidget( dw );
 }
 
 void GamePage::onPutCardOnTable( Card *card ) noexcept {

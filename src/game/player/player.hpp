@@ -41,11 +41,14 @@ protected slots:
   virtual void gc_cardThrowResult( CardThrowResult result,
                                    Card *thrown_card ) noexcept;
 
+  virtual void pw_takeCardFromDeck( Card *card ) noexcept = 0;
+
 signals:
   void pw_takeCards( const QVector<Card *> &cards );
   void pw_handleThrowResult( CardThrowResult result, Card *thrown_card );
   void gc_attacked( Card *attackCard );
   void gc_defended( Card *defenceCard );
+  void gc_player_takeCardFromDeck( Card *card, Player *player );
 };
 
 } // namespace durak

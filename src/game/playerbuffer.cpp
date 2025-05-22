@@ -41,6 +41,7 @@ size_t PlayerBuffer::size() const noexcept {
 PlayerBuffer::iterator PlayerBuffer::begin() noexcept {
   return players.begin();
 }
+
 PlayerBuffer::iterator PlayerBuffer::end() noexcept {
   return players.end();
 }
@@ -48,8 +49,13 @@ PlayerBuffer::iterator PlayerBuffer::end() noexcept {
 PlayerBuffer::const_iterator PlayerBuffer::cbegin() const noexcept {
   return players.cbegin();
 }
+
 PlayerBuffer::const_iterator PlayerBuffer::cend() const noexcept {
   return players.cend();
+}
+
+std::shared_ptr<Player> PlayerBuffer::operator[] ( size_t idx ) const noexcept {
+  return players[idx % players.size()];
 }
 
 } // namespace durak

@@ -16,6 +16,9 @@ PlayerHuman::PlayerHuman( HostPlayerWidget *playerWidget )
 
   connect( this, &PlayerHuman::pw_handleThrowResult, playerWidget,
            &HostPlayerWidget::throwResult );
+
+  connect( playerWidget, &HostPlayerWidget::player_playerTakeCardFromDeck, this,
+           &PlayerHuman::pw_takeCardFromDeck );
 }
 
 void PlayerHuman::pw_onAttacked( Card *attackCard ) noexcept {
@@ -38,6 +41,10 @@ void PlayerHuman::gc_onDefenceTurn( Card *attackCard ) noexcept {
            &PlayerHuman::pw_onDefended, Qt::SingleShotConnection );
 
   emit pw_defenceTurn( attackCard );
+}
+
+void PlayerHuman::pw_takeCardFromDeck( Card *cards ) noexcept {
+  emit gc_player_takeCardFromDeck( cards, this );
 }
 
 } // namespace durak

@@ -18,6 +18,8 @@ protected slots:
   virtual void pw_onAttacked( Card *attackCard ) noexcept;
   virtual void pw_onDefended( Card *defenceCard ) noexcept;
 
+  virtual void pw_takeCardFromDeck( Card *card ) noexcept override;
+
 signals:
   void pw_attackTurn();
   void pw_defenceTurn( Card *attackCard );

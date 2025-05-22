@@ -10,6 +10,7 @@
 #include <game/waitresult.hpp>
 #include <memory>
 #include <random>
+#include <widgets/deckwidget/deckwidget.hpp>
 
 namespace durak {
 
@@ -19,9 +20,12 @@ class GameController : public QObject {
   PlayerBuffer b;
   std::unique_ptr<FSM> fsm;
   std::vector<std::unique_ptr<Card>> heap;
+  DeckWidget *deck;
 
   std::random_device random_device;
   std::mt19937 random_engine;
+
+  std::shared_ptr<Player> currentPlayer;
 
   QEventLoop wait;
 
@@ -38,9 +42,13 @@ signals:
   void cardThrowResult( CardThrowResult result, Card *thrown );
   void putCardOnTable( Card *card );
 
+private slots:
+  void playerTakeCardFromDeck( Card *card, Player *player ) noexcept;
+
 public:
   GameController( PlayerBuffer &&b, std::unique_ptr<FSM> fsm,
-                  std::vector<std::unique_ptr<Card>> heap ) noexcept;
+                  std::vector<std::unique_ptr<Card>> heap,
+                  DeckWidget *deck ) noexcept;
 
   std::vector<std::unique_ptr<Card>> randomFromHeap() noexcept;
 

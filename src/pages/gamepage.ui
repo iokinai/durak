@@ -20,7 +20,14 @@
       <layout class="QHBoxLayout" name="aiPlayerLayout"/>
      </item>
      <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_3"/>
+      <layout class="QHBoxLayout" name="middleLayyout" stretch="3,1">
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_3"/>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="deckLayout"/>
+       </item>
+      </layout>
      </item>
      <item>
       <layout class="QHBoxLayout" name="hostPlayerLayout"/>

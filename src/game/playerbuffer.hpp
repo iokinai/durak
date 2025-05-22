@@ -32,6 +32,8 @@ public:
 
   const_iterator cbegin() const noexcept;
   const_iterator cend() const noexcept;
+
+  std::shared_ptr<Player> operator[] ( size_t idx ) const noexcept;
 };
 
 } // namespace durak

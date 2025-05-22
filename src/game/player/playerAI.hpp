@@ -13,6 +13,7 @@ class PlayerAI : public Player {
 protected slots:
   virtual void gc_onAttackTurn() noexcept override;
   virtual void gc_onDefenceTurn( Card *attackCard ) noexcept override;
+  virtual void pw_takeCardFromDeck( Card *card ) noexcept override;
 
 public:
   explicit PlayerAI( AIPlayerWidget *playerWidget );

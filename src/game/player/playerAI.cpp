@@ -36,4 +36,6 @@ PlayerAI::PlayerAI( AIPlayerWidget *playerWidget )
            &AIPlayerWidget::throwResult );
 }
 
+void PlayerAI::pw_takeCardFromDeck( Card *card ) noexcept { }
+
 } // namespace durak

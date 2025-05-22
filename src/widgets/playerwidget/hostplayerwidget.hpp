@@ -1,6 +1,7 @@
 #pragma once
 
 #include <widgets/cardwidget/clickablecardwidget.hpp>
+#include <widgets/deckwidget/deckwidget.hpp>
 #include <widgets/playerwidget/playerwidget.hpp>
 
 namespace Ui {
@@ -23,6 +24,8 @@ class HostPlayerWidget : public PlayerWidget {
   UiMode mode = UiMode::Idle;
   Card *currentCard;
 
+  DeckWidget *deckWidget;
+
   void onCardAttackClicked( Card *card ) noexcept;
   void onCardDefenceClicked( Card *card, Card *attack ) noexcept;
 
@@ -36,7 +39,7 @@ public slots:
                             Card *thrown_card ) noexcept override;
 
 public:
-  explicit HostPlayerWidget( QWidget *parent = nullptr );
+  explicit HostPlayerWidget( DeckWidget *widget, QWidget *parent = nullptr );
   ~HostPlayerWidget() override;
 };
 

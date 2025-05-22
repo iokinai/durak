@@ -17,6 +17,8 @@ class CardWidget : public QWidget {
 
   friend class PlayerWidget;
   friend class HostPlayerWidget;
+  friend class AIPlayerWidget;
+  friend class DeckWidget;
 
   Ui::CardWidget *ui;
 
@@ -33,8 +35,6 @@ public:
   ~CardWidget();
 
   void setFaceUp( bool isFaceUp ) noexcept;
-
-  friend class AIPlayerWidget;
 };
 
 } // namespace durak

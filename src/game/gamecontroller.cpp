@@ -8,13 +8,18 @@
 
 namespace durak {
 
-GameController::GameController(
-    PlayerBuffer &&b, std::unique_ptr<FSM> fsm,
-    std::vector<std::unique_ptr<Card>> heap ) noexcept
+GameController::GameController( PlayerBuffer &&b, std::unique_ptr<FSM> fsm,
+                                std::vector<std::unique_ptr<Card>> heap,
+                                DeckWidget *deck ) noexcept
     : b( std::move( b ) ), fsm( std::move( fsm ) ), heap( std::move( heap ) ),
-      random_device(), random_engine( random_device() ) {
+      random_device(), random_engine( random_device() ), deck( deck ) {
   connect( qApp, &QCoreApplication::aboutToQuit, this,
            [this]( auto ) { wait.quit(); } );
+
+  for ( auto &player : this->b ) {
+    connect( player.get(), &Player::gc_player_takeCardFromDeck, this,
+             &GameController::playerTakeCardFromDeck );
+  }
 }
 
 void GameController::start() noexcept {
@@ -50,6 +55,17 @@ void GameController::dealCards() noexcept {
   emit uiDealCards();
 }
 
+void GameController::playerTakeCardFromDeck( Card *card,
+                                             Player *player ) noexcept {
+  if ( currentPlayer.get() != player ) {
+    return;
+  }
+
+  std::vector<std::unique_ptr<Card>> c;
+  c.push_back( std::move( std::unique_ptr<Card>( card ) ) );
+  currentPlayer->takeCards( std::move( c ) );
+}
+
 std::vector<std::unique_ptr<Card>> GameController::randomFromHeap() noexcept {
   std::vector<std::unique_ptr<Card>> res;
 
@@ -70,6 +86,9 @@ void GameController::formatTable() noexcept {
   for ( const auto &player : b ) {
     player->takeCards( randomFromHeap() );
   }
+
+  deck->putCards( heap );
+  heap.clear();
 }
 
 WaitResult<std::unique_ptr<Card>>
@@ -166,7 +185,7 @@ void GameController::gameLoop() noexcept {
   CardSuit currentTrump;
 
   while ( true ) {
-    auto currentPlayer                = b.next();
+    currentPlayer                     = b.next();
     std::unique_ptr<Card> currentCard = nullptr;
 
     Event lastEvent = Event::GameStarted;
@@ -226,7 +245,7 @@ void GameController::gameLoop() noexcept {
                       nullptr, "Defence",
                       QString( "Player defended with card" ) );
                 },
-                [&currentCard, &currentPlayer, this]( DefenceResultRejected ) {
+                [&currentCard, this]( DefenceResultRejected ) {
                   currentPlayer = b.prev();
                   QMessageBox::information(
                       nullptr, "Defence",

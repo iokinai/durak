@@ -16,7 +16,8 @@ QString CardWidget::loadFont() const noexcept {
 }
 
 CardWidget::CardWidget( Card *card, QWidget *parent, bool isFaceUp )
-    : QWidget( parent ), card( card ), ui( new Ui::CardWidget ), isFaceUp( isFaceUp ) {
+    : QWidget( parent ), card( card ), ui( new Ui::CardWidget ),
+      isFaceUp( isFaceUp ) {
   ui->setupUi( this );
 
   setAutoFillBackground( true );
@@ -40,13 +41,18 @@ CardWidget::CardWidget( Card *card, QWidget *parent, bool isFaceUp )
 }
 
 void CardWidget::faceUpdate() noexcept {
-  QString color = isFaceUp ? "255, 255, 255" : "30, 144, 255";
-  QString colorRGB = QString( "rgb(%1)" ).arg(color);
+  QString color    = isFaceUp ? "255, 255, 255" : "30, 144, 255";
+  QString colorRGB = QString( "rgb(%1)" ).arg( color );
 
-  setStyleSheet(QString("#CardWidget { background-color: %1; } QLabel { color: black; }").arg(colorRGB));
+  setStyleSheet(
+      QString(
+          "#CardWidget { background-color: %1; } QLabel { color: black; }" )
+          .arg( colorRGB ) );
 
-  ui->suitTopImage->setText(isFaceUp ? QString::fromStdString(suitToString(card->getSuit())) : " ");
-  ui->rankTopText->setText(isFaceUp ? QString::fromStdString(*card) : " ");
+  ui->suitTopImage->setText(
+      isFaceUp ? QString::fromStdString( suitToString( card->getSuit() ) )
+               : " " );
+  ui->rankTopText->setText( isFaceUp ? QString::fromStdString( *card ) : " " );
 }
 
 void CardWidget::setFaceUp( bool isFaceUp ) noexcept {

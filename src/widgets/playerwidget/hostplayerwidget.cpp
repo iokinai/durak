@@ -5,12 +5,20 @@
 
 #include <QMessageBox>
 #include <QTimer>
+#include <widgets/deckwidget/deckwidget.hpp>
 
 namespace durak {
 
-HostPlayerWidget::HostPlayerWidget( QWidget *parent )
-    : PlayerWidget( parent ), ui( new Ui::HostPlayerWidget ) {
+HostPlayerWidget::HostPlayerWidget( DeckWidget *widget, QWidget *parent )
+    : PlayerWidget( parent ), ui( new Ui::HostPlayerWidget ),
+      deckWidget( widget ) {
   ui->setupUi( this );
+
+  connect( deckWidget, &DeckWidget::playerTakeCard, this, [this]( Card *card ) {
+    if ( card ) {
+      emit player_playerTakeCardFromDeck( card );
+    }
+  } );
 }
 
 void HostPlayerWidget::onCardsGiven(

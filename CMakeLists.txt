@@ -34,6 +34,7 @@ set(PROJECT_SOURCES
     src/widgets/cardwidget/clickablecardwidget.cpp
     src/widgets/playerwidget/hostplayerwidget.cpp
     src/widgets/playerwidget/aiplayerwidget.cpp
+    src/widgets/deckwidget/deckwidget.cpp
 )
 
 set(PROJECT_HEADERS
@@ -56,6 +57,7 @@ set(PROJECT_HEADERS
     src/widgets/playerwidget/hostplayerwidget.hpp
     src/widgets/playerwidget/playerwidget.hpp
     src/widgets/playerwidget/aiplayerwidget.hpp
+    src/widgets/deckwidget/deckwidget.hpp
 )
 
 set(PROJECT_UIS
@@ -64,6 +66,7 @@ set(PROJECT_UIS
     src/widgets/cardwidget/cardwidget.ui
     src/widgets/playerwidget/hostplayerwidget.ui
     src/widgets/playerwidget/aiplayerwidget.ui
+    src/widgets/deckwidget/deckwidget.ui
 )
 
 set(PROJECT_RESOURCES
