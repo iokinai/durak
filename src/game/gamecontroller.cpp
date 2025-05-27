@@ -19,6 +19,9 @@ GameController::GameController( PlayerBuffer &&b, std::unique_ptr<FSM> fsm,
   for ( auto &player : this->b ) {
     connect( player.get(), &Player::gc_player_takeCardFromDeck, this,
              &GameController::playerTakeCardFromDeck );
+
+    connect( player.get(), &Player::gc_player_takeCurrentCard, this,
+             &GameController::playerTakeCardFromTable );
   }
 }
 
@@ -64,6 +67,17 @@ void GameController::playerTakeCardFromDeck( Card *card,
   std::vector<std::unique_ptr<Card>> c;
   c.push_back( std::move( std::unique_ptr<Card>( card ) ) );
   currentPlayer->takeCards( std::move( c ) );
+}
+
+void GameController::playerTakeCardFromTable( Player *player ) noexcept {
+  if ( currentPlayer.get() == player && currentTurn == CurrentTurn::Defence ) {
+    Card *move = currentCard.release();
+
+    std::vector<std::unique_ptr<Card>> cards;
+    cards.push_back( std::move( std::unique_ptr<Card>( move ) ) );
+    player->takeCards( std::move( cards ) );
+    emit putCardOnTable( nullptr );
+  }
 }
 
 std::vector<std::unique_ptr<Card>> GameController::randomFromHeap() noexcept {
@@ -185,8 +199,8 @@ void GameController::gameLoop() noexcept {
   CardSuit currentTrump;
 
   while ( true ) {
-    currentPlayer                     = b.next();
-    std::unique_ptr<Card> currentCard = nullptr;
+    currentPlayer = b.next();
+    currentCard   = nullptr;
 
     Event lastEvent = Event::GameStarted;
 
@@ -207,9 +221,12 @@ void GameController::gameLoop() noexcept {
       case Action::GiveCards : {
         formatTable();
         lastEvent = Event::RoundStarted;
+        emit putCardOnTable( nullptr );
+        currentTurn = CurrentTurn::Idle;
         break;
       }
       case Action::PlayerAttack : {
+        currentTurn     = CurrentTurn::Attack;
         auto waitResult = attackRequest( currentPlayer );
         auto result     = std::get_if<std::unique_ptr<Card>>( &waitResult );
 
@@ -222,6 +239,7 @@ void GameController::gameLoop() noexcept {
         break;
       }
       case Action::NextPlayerDefend : {
+        currentTurn     = CurrentTurn::Defence;
         currentPlayer   = b.next();
         auto waitResult = defenceRequest( currentPlayer, currentCard.get() );
 
@@ -231,36 +249,40 @@ void GameController::gameLoop() noexcept {
           return;
         }
 
-        std::visit(
-            overloads {
-                [&currentCard, &lastEvent]( DefenceResultNoCard ) {
-                  lastEvent = Event::PlayerCantDefend;
-                  QMessageBox::information( nullptr, "Defence",
-                                            "Player can't defend" );
-                },
-                [&currentCard, &lastEvent]( DefenceResultAccepted &result ) {
-                  currentCard = std::move( result.card );
-                  lastEvent   = Event::PlayerDefended;
-                  QMessageBox::information(
-                      nullptr, "Defence",
-                      QString( "Player defended with card" ) );
-                },
-                [&currentCard, this]( DefenceResultRejected ) {
-                  currentPlayer = b.prev();
-                  QMessageBox::information(
-                      nullptr, "Defence",
-                      QString( "Player can't defend with this card" ) );
-                  emit uiGameLogicError();
-                },
-            },
-            *resultVariant );
+        std::visit( overloads {
+                        [this, &lastEvent]( DefenceResultNoCard ) {
+                          lastEvent = Event::PlayerCantDefend;
+                          QMessageBox::information( nullptr, "Defence",
+                                                    "Player can't defend" );
+                        },
+                        [this, &lastEvent]( DefenceResultAccepted &result ) {
+                          currentCard = std::move( result.card );
+                          lastEvent   = Event::PlayerDefended;
+                          QMessageBox::information(
+                              nullptr, "Defence",
+                              QString( "Player defended with card: %1 of %2" )
+                                  .arg( QString::fromStdString( *currentCard ) )
+                                  .arg( QString::fromStdString( suitToString(
+                                      currentCard->getSuit() ) ) ) );
+                        },
+                        [this]( DefenceResultRejected ) {
+                          currentPlayer = b.prev();
+                          QMessageBox::information(
+                              nullptr, "Defence",
+                              QString( "Player can't defend with this card" ) );
+                          emit uiGameLogicError();
+                        },
+                    },
+                    *resultVariant );
         break;
       }
       case Action::PlayerTakeCards :
       case Action::DrawCards :
+        currentTurn = CurrentTurn::Idle;
         break;
       case Action::RoundEnd :
-        lastEvent = Event::RoundEnded;
+        currentTurn = CurrentTurn::Idle;
+        lastEvent   = Event::RoundEnded;
         break;
       default :
         break;

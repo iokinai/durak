@@ -49,6 +49,7 @@ signals:
   void gc_attacked( Card *attackCard );
   void gc_defended( Card *defenceCard );
   void gc_player_takeCardFromDeck( Card *card, Player *player );
+  void gc_player_takeCurrentCard( Player *player );
 };
 
 } // namespace durak

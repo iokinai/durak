@@ -17,6 +17,12 @@ namespace durak {
 class GameController : public QObject {
   Q_OBJECT
 
+  enum class CurrentTurn {
+    Attack,
+    Defence,
+    Idle,
+  } currentTurn = CurrentTurn::Idle;
+
   PlayerBuffer b;
   std::unique_ptr<FSM> fsm;
   std::vector<std::unique_ptr<Card>> heap;
@@ -26,6 +32,7 @@ class GameController : public QObject {
   std::mt19937 random_engine;
 
   std::shared_ptr<Player> currentPlayer;
+  std::unique_ptr<Card> currentCard;
 
   QEventLoop wait;
 
@@ -44,6 +51,7 @@ signals:
 
 private slots:
   void playerTakeCardFromDeck( Card *card, Player *player ) noexcept;
+  void playerTakeCardFromTable( Player *player ) noexcept;
 
 public:
   GameController( PlayerBuffer &&b, std::unique_ptr<FSM> fsm,
@@ -51,8 +59,6 @@ public:
                   DeckWidget *deck ) noexcept;
 
   std::vector<std::unique_ptr<Card>> randomFromHeap() noexcept;
-
-  Card current_card();
 
   void doStartActions( Action act ) noexcept;
   void shuffleCards() noexcept;

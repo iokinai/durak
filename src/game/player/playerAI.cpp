@@ -21,6 +21,8 @@ void PlayerAI::gc_onDefenceTurn( Card *attackCard ) noexcept {
 
   if ( def != cards.end() ) {
     defCard = def->get();
+  } else {
+    emit gc_player_takeCurrentCard( this );
   }
 
   emit gc_defended( defCard );

@@ -18,6 +18,9 @@ class GamePage : public QWidget {
 
   HostPlayerWidget *hpw;
   AIPlayerWidget *apw;
+  GameController *controller;
+
+  QWidget *prepareWidgetToPutOnTable( Card *card ) noexcept;
 
 private slots:
   void onPutCardOnTable( Card *card ) noexcept;
