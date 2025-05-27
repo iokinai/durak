@@ -24,6 +24,8 @@ class GamePage : public QWidget {
 
 private slots:
   void onPutCardOnTable( Card *card ) noexcept;
+  void onAddCardOnTable( Card *card ) noexcept;
+  void onClearTable() noexcept;
 
 public:
   explicit GamePage( QWidget *parent );

@@ -3,8 +3,6 @@
 #include "cardsuit.hpp"
 #include <cstdint>
 
-#include <QMessageBox>
-
 namespace durak {
 
 class Card {

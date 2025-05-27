@@ -19,6 +19,9 @@ PlayerHuman::PlayerHuman( HostPlayerWidget *playerWidget )
 
   connect( playerWidget, &HostPlayerWidget::player_playerTakeCardFromDeck, this,
            &PlayerHuman::pw_takeCardFromDeck );
+
+  connect( playerWidget, &HostPlayerWidget::player_takeCurrentCard, this,
+           [this]() { emit gc_player_takeCurrentCard( this ); } );
 }
 
 void PlayerHuman::pw_onAttacked( Card *attackCard ) noexcept {
@@ -45,6 +48,11 @@ void PlayerHuman::gc_onDefenceTurn( Card *attackCard ) noexcept {
 
 void PlayerHuman::pw_takeCardFromDeck( Card *cards ) noexcept {
   emit gc_player_takeCardFromDeck( cards, this );
+}
+
+void PlayerHuman::gc_setCurrentTrump( CardSuit suit ) noexcept {
+  currentTrump = suit;
+  playerWidget->setCurrentTrump( suit );
 }
 
 } // namespace durak

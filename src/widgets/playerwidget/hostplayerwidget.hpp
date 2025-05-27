@@ -37,10 +37,16 @@ public slots:
   void onDefenceTurn( Card *attackCard ) noexcept override;
   virtual void throwResult( CardThrowResult result,
                             Card *thrown_card ) noexcept override;
+  void takeCurrentCard() noexcept;
+
+signals:
+  void player_takeCurrentCard();
 
 public:
   explicit HostPlayerWidget( DeckWidget *widget, QWidget *parent = nullptr );
   ~HostPlayerWidget() override;
+
+  virtual void afterSettingCurrentTrump() override;
 };
 
 } // namespace durak

@@ -15,6 +15,7 @@ class PlayerWidget : public QWidget {
 
 protected:
   QVector<CardWidget *> cards;
+  CardSuit currentTrump;
 
   template <std::derived_from<CardWidget> T, class Ui>
   void cardsGivenWithType( Ui *ui, QVector<Card *> &cards ) noexcept {
@@ -47,6 +48,13 @@ public:
   inline explicit PlayerWidget( QWidget *parent = nullptr )
       : QWidget( parent ) { }
   virtual ~PlayerWidget() = default;
+
+  virtual void afterSettingCurrentTrump() { }
+
+  inline void setCurrentTrump( CardSuit suit ) noexcept {
+    currentTrump = suit;
+    afterSettingCurrentTrump();
+  }
 
 public slots:
   virtual void onCardsGiven( QVector<Card *> &cards ) noexcept = 0;

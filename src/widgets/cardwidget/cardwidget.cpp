@@ -1,19 +1,12 @@
 #include "cardwidget.hpp"
 #include "./ui_cardwidget.h"
 #include <QFontDatabase>
-#include <QMessageBox>
 #include <QPainter>
 #include <QPixmap>
 #include <QResizeEvent>
+#include <font.hpp>
 
 namespace durak {
-
-QString CardWidget::loadFont() const noexcept {
-  int id         = QFontDatabase::addApplicationFont( ":/fonts/card.ttf" );
-  QString family = QFontDatabase::applicationFontFamilies( id ).at( 0 );
-
-  return family;
-}
 
 CardWidget::CardWidget( Card *card, QWidget *parent, bool isFaceUp )
     : QWidget( parent ), card( card ), ui( new Ui::CardWidget ),
@@ -43,11 +36,17 @@ CardWidget::CardWidget( Card *card, QWidget *parent, bool isFaceUp )
 void CardWidget::faceUpdate() noexcept {
   QString color    = isFaceUp ? "255, 255, 255" : "30, 144, 255";
   QString colorRGB = QString( "rgb(%1)" ).arg( color );
+  QString backImage;
+
+  if ( !isFaceUp ) {
+    backImage = "background-image: url(:/images/cardback.png)";
+  }
 
   setStyleSheet(
       QString(
-          "#CardWidget { background-color: %1; } QLabel { color: black; }" )
-          .arg( colorRGB ) );
+          "#CardWidget { background-color: %1; %2; } QLabel { color: black; }" )
+          .arg( colorRGB )
+          .arg( backImage ) );
 
   ui->suitTopImage->setText(
       isFaceUp ? QString::fromStdString( suitToString( card->getSuit() ) )

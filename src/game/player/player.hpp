@@ -26,6 +26,8 @@ protected:
     return result;
   }
 
+  CardSuit currentTrump;
+
   std::vector<std::unique_ptr<Card>> cards;
   virtual void takeCards( std::vector<std::unique_ptr<Card>> &&cards );
 
@@ -41,7 +43,8 @@ protected slots:
   virtual void gc_cardThrowResult( CardThrowResult result,
                                    Card *thrown_card ) noexcept;
 
-  virtual void pw_takeCardFromDeck( Card *card ) noexcept = 0;
+  virtual void pw_takeCardFromDeck( Card *card ) noexcept   = 0;
+  virtual void gc_setCurrentTrump( CardSuit suit ) noexcept = 0;
 
 signals:
   void pw_takeCards( QVector<Card *> &cards );

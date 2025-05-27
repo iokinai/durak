@@ -1,5 +1,6 @@
 #include "gamecontroller.hpp"
 #include <QCoreApplication>
+#include <QTimer>
 #include <memory>
 #include <overloads.hpp>
 #include <random>
@@ -13,6 +14,8 @@ GameController::GameController( PlayerBuffer &&b, std::unique_ptr<FSM> fsm,
                                 DeckWidget *deck ) noexcept
     : b( std::move( b ) ), fsm( std::move( fsm ) ), heap( std::move( heap ) ),
       random_device(), random_engine( random_device() ), deck( deck ) {
+  shuffleHeap( this->heap );
+
   connect( qApp, &QCoreApplication::aboutToQuit, this,
            [this]( auto ) { wait.quit(); } );
 
@@ -22,7 +25,17 @@ GameController::GameController( PlayerBuffer &&b, std::unique_ptr<FSM> fsm,
 
     connect( player.get(), &Player::gc_player_takeCurrentCard, this,
              &GameController::playerTakeCardFromTable );
+
+    connect( this, &GameController::setCurrentTrump, player.get(),
+             &Player::gc_setCurrentTrump );
   }
+}
+
+void GameController::shuffleHeap(
+    std::vector<std::unique_ptr<Card>> &heap ) noexcept {
+  std::random_device rd;
+  std::mt19937 g( rd() );
+  std::shuffle( heap.begin(), heap.end(), g );
 }
 
 void GameController::start() noexcept {
@@ -32,26 +45,7 @@ void GameController::start() noexcept {
     return;
   }
 
-  doStartActions( act.value() );
-
   gameLoop();
-}
-
-void GameController::doStartActions( Action act ) noexcept {
-  // switch ( act ) {
-
-  // case Action::ShuffleTheCards :
-  //   shuffleCards();
-  //   break;
-  // case Action::DealTheCards :
-  //   dealCards();
-  // default :
-  //   return;
-  // }
-}
-
-void GameController::shuffleCards() noexcept {
-  emit uiShuffleCards();
 }
 
 void GameController::dealCards() noexcept {
@@ -70,14 +64,17 @@ void GameController::playerTakeCardFromDeck( Card *card,
 }
 
 void GameController::playerTakeCardFromTable( Player *player ) noexcept {
-  if ( currentPlayer.get() == player && currentTurn == CurrentTurn::Defence ) {
-    Card *move = currentCard.release();
-
-    std::vector<std::unique_ptr<Card>> cards;
-    cards.push_back( std::move( std::unique_ptr<Card>( move ) ) );
-    player->takeCards( std::move( cards ) );
-    emit putCardOnTable( nullptr );
+  if ( !( currentPlayer.get() == player &&
+          currentTurn == CurrentTurn::Defence ) ) {
+    return;
   }
+
+  Card *move = currentCard.release();
+
+  std::vector<std::unique_ptr<Card>> cards;
+  cards.push_back( std::move( std::unique_ptr<Card>( move ) ) );
+  player->takeCards( std::move( cards ) );
+  emit putCardOnTable( nullptr );
 }
 
 std::vector<std::unique_ptr<Card>> GameController::randomFromHeap() noexcept {
@@ -174,7 +171,7 @@ GameController::defenceRequest( std::shared_ptr<Player> player,
 
   CardThrowResult result = CardThrowResult::Accepted;
 
-  if ( card && !card->beats( *attackCard, CardSuit::DM ) ) {
+  if ( card && !card->beats( *attackCard, currentTrump ) ) {
     result = CardThrowResult::RejectedRequiersRepeat;
   }
 
@@ -193,10 +190,13 @@ GameController::defenceRequest( std::shared_ptr<Player> player,
   case CardThrowResult::RejectedRequiersRepeat :
     return DefenceResultRejected {};
   }
+
+  return DefenceResultNoCard {};
 }
 
 void GameController::gameLoop() noexcept {
-  CardSuit currentTrump;
+  currentTrump = heap.back()->getSuit();
+  emit setCurrentTrump( currentTrump );
 
   while ( true ) {
     currentPlayer = b.next();
@@ -252,24 +252,16 @@ void GameController::gameLoop() noexcept {
         std::visit( overloads {
                         [this, &lastEvent]( DefenceResultNoCard ) {
                           lastEvent = Event::PlayerCantDefend;
-                          QMessageBox::information( nullptr, "Defence",
-                                                    "Player can't defend" );
                         },
                         [this, &lastEvent]( DefenceResultAccepted &result ) {
                           currentCard = std::move( result.card );
-                          lastEvent   = Event::PlayerDefended;
-                          QMessageBox::information(
-                              nullptr, "Defence",
-                              QString( "Player defended with card: %1 of %2" )
-                                  .arg( QString::fromStdString( *currentCard ) )
-                                  .arg( QString::fromStdString( suitToString(
-                                      currentCard->getSuit() ) ) ) );
+                          emit addCardOnTable( currentCard.get() );
+                          lastEvent = Event::PlayerDefended;
+
+                          QTimer::singleShot( 500, [] {} );
                         },
                         [this]( DefenceResultRejected ) {
                           currentPlayer = b.prev();
-                          QMessageBox::information(
-                              nullptr, "Defence",
-                              QString( "Player can't defend with this card" ) );
                           emit uiGameLogicError();
                         },
                     },

@@ -5,6 +5,7 @@
 
 #include <QMessageBox>
 #include <QTimer>
+#include <font.hpp>
 #include <widgets/deckwidget/deckwidget.hpp>
 
 namespace durak {
@@ -19,6 +20,9 @@ HostPlayerWidget::HostPlayerWidget( DeckWidget *widget, QWidget *parent )
       emit player_playerTakeCardFromDeck( card );
     }
   } );
+
+  connect( ui->takeButton, &QPushButton::clicked, this,
+           &HostPlayerWidget::takeCurrentCard );
 }
 
 void HostPlayerWidget::onCardsGiven( QVector<Card *> &givenCards ) noexcept {
@@ -50,17 +54,13 @@ void HostPlayerWidget::prepareConnects() noexcept {
 
 void HostPlayerWidget::onAttackTurn() noexcept {
   mode = UiMode::Attack;
+  ui->takeButton->setEnabled( false );
 }
 
 void HostPlayerWidget::onDefenceTurn( Card *attackCard ) noexcept {
-  QMessageBox::critical( this, "Defence Turn",
-                         QString( "You are attacked by %1 of %2" )
-                             .arg( QString::number( attackCard->getRank() ) )
-                             .arg( QString::fromStdString(
-                                 suitToString( attackCard->getSuit() ) ) ) );
-
   mode        = UiMode::Defence;
   currentCard = attackCard;
+  ui->takeButton->setEnabled( true );
 }
 
 void HostPlayerWidget::onCardAttackClicked( Card *card ) noexcept {
@@ -76,8 +76,8 @@ void HostPlayerWidget::onCardAttackClicked( Card *card ) noexcept {
 void HostPlayerWidget::onCardDefenceClicked( Card *card,
                                              Card *attack ) noexcept {
 
-  if ( !card->beats( *attack, CardSuit::DM ) ) {
-    QMessageBox::critical( this, "Does not beat",
+  if ( !card->beats( *attack, currentTrump ) ) {
+    QMessageBox::critical( this, "Does not beat!",
                            "This card does not beat the attack one" );
     return;
   }
@@ -99,6 +99,17 @@ void HostPlayerWidget::throwResult( CardThrowResult result,
   case CardThrowResult::RejectedRequiersRepeat :
     break;
   }
+}
+
+void HostPlayerWidget::takeCurrentCard() noexcept {
+  emit player_takeCurrentCard();
+  emit defence( nullptr );
+}
+
+void HostPlayerWidget::afterSettingCurrentTrump() {
+  ui->currentTrumpText->setFont( QFont( loadFont(), 20, QFont::Bold ) );
+  ui->currentTrumpText->setText(
+      QString::fromStdString( suitToString( currentTrump ) ) );
 }
 
 HostPlayerWidget::~HostPlayerWidget() {

@@ -28,8 +28,6 @@ protected:
 
   void faceUpdate() noexcept;
 
-  QString loadFont() const noexcept;
-
 public:
   CardWidget( Card *card, QWidget *parent = nullptr, bool isFaceUp = false );
   ~CardWidget();

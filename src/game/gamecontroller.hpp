@@ -33,6 +33,7 @@ class GameController : public QObject {
 
   std::shared_ptr<Player> currentPlayer;
   std::unique_ptr<Card> currentCard;
+  CardSuit currentTrump;
 
   QEventLoop wait;
 
@@ -48,6 +49,9 @@ signals:
   void uiGameLogicError();
   void cardThrowResult( CardThrowResult result, Card *thrown );
   void putCardOnTable( Card *card );
+  void setCurrentTrump( CardSuit suit );
+  void addCardOnTable( Card *card );
+  void clearTable();
 
 private slots:
   void playerTakeCardFromDeck( Card *card, Player *player ) noexcept;
@@ -60,8 +64,8 @@ public:
 
   std::vector<std::unique_ptr<Card>> randomFromHeap() noexcept;
 
-  void doStartActions( Action act ) noexcept;
-  void shuffleCards() noexcept;
+  void shuffleHeap( std::vector<std::unique_ptr<Card>> &heap ) noexcept;
+
   void start() noexcept;
   void gameLoop() noexcept;
   void dealCards() noexcept;

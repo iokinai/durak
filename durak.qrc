@@ -2,4 +2,7 @@
     <qresource prefix="/fonts">
         <file alias="card.ttf">assets/fonts/card.ttf</file>
     </qresource>
+    <qresource prefix="/images">
+        <file alias="cardback.png">assets/images/cardback.png</file>
+    </qresource>
 </RCC>
