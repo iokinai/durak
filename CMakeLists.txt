@@ -22,6 +22,7 @@ set(PROJECT_SOURCES
     src/main.cpp
     src/mainwindow.cpp
     src/pages/gamepage.cpp
+    src/pages/winpage.cpp
     src/game/fsm/state.cpp
     src/game/fsm/fsm.cpp
     src/game/cards/card.cpp
@@ -40,6 +41,7 @@ set(PROJECT_SOURCES
 set(PROJECT_HEADERS
     src/mainwindow.hpp
     src/pages/gamepage.hpp
+    src/pages/winpage.hpp
     src/game/fsm/state.hpp
     src/game/fsm/fsm.hpp
     src/game/cards/card.hpp
@@ -63,6 +65,7 @@ set(PROJECT_HEADERS
 set(PROJECT_UIS
     src/mainwindow.ui
     src/pages/gamepage.ui
+    src/pages/winpage.ui
     src/widgets/cardwidget/cardwidget.ui
     src/widgets/playerwidget/hostplayerwidget.ui
     src/widgets/playerwidget/aiplayerwidget.ui

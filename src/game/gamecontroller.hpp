@@ -34,6 +34,7 @@ class GameController : public QObject {
   std::shared_ptr<Player> currentPlayer;
   std::unique_ptr<Card> currentCard;
   CardSuit currentTrump;
+  Event lastEvent;
 
   QEventLoop wait;
 
@@ -52,6 +53,7 @@ signals:
   void setCurrentTrump( CardSuit suit );
   void addCardOnTable( Card *card );
   void clearTable();
+  void roundEndWithWin( Player *player );
 
 private slots:
   void playerTakeCardFromDeck( Card *card, Player *player ) noexcept;

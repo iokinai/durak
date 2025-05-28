@@ -2,6 +2,7 @@
 
 #include <QMainWindow>
 #include <pages/gamepage.hpp>
+#include <pages/winpage.hpp>
 
 namespace Ui {
 class MainWindow;
@@ -14,10 +15,15 @@ class MainWindow : public QMainWindow {
   Ui::MainWindow *ui;
 
   GamePage *gp;
+  WinPage *wp;
 
 public:
   explicit MainWindow( QWidget *parent = nullptr );
   ~MainWindow();
+
+public slots:
+  void showWinPage( PlayerType winner );
+  void onWpStartAgain();
 };
 
 } // namespace durak

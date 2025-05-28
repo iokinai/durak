@@ -18,7 +18,7 @@ void PlayerAI::gc_onDefenceTurn( Card *attackCard ) noexcept {
                              return card->beats( *attackCard, currentTrump );
                            } );
 
-  QTimer::singleShot( 1000, [&]() {
+  QTimer::singleShot( 1000, [def, this]() {
     Card *defCard = nullptr;
 
     if ( def != cards.end() ) {

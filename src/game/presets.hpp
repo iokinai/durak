@@ -3,7 +3,6 @@
 #include <game/cards/card.hpp>
 #include <game/fsm/fsm.hpp>
 
-
 namespace durak {
 
 inline std::unique_ptr<FSM> createTestFSM() {
@@ -12,13 +11,16 @@ inline std::unique_ptr<FSM> createTestFSM() {
   auto prepare_round = std::make_shared<State>( Action::GiveCards );
   auto attack        = std::make_shared<State>( Action::PlayerAttack );
   auto defend        = std::make_shared<State>( Action::NextPlayerDefend );
+  auto end           = std::make_shared<State>( Action::RoundEnd );
 
   def->setTransitions( { { Event::GameStarted, prepare_round } } );
   null_state->setTransitions( { { Event::GameStarted, def } } );
   prepare_round->setTransitions( { { Event::RoundStarted, attack } } );
-  attack->setTransitions( { { Event::PlayerAttacked, defend } } );
+  attack->setTransitions(
+      { { Event::PlayerAttacked, defend }, { Event::RoundEnded, end } } );
   defend->setTransitions( { { Event::PlayerDefended, attack },
-                            { Event::PlayerCantDefend, attack } } );
+                            { Event::PlayerCantDefend, attack },
+                            { Event::RoundEnded, end } } );
 
   std::vector<std::shared_ptr<State>> allStates = { def, prepare_round, attack,
                                                     defend, null_state };

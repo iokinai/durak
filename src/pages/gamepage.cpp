@@ -10,6 +10,8 @@
 #include <widgets/playerwidget/aiplayerwidget.hpp>
 #include <widgets/playerwidget/hostplayerwidget.hpp>
 
+#include <QMessageBox>
+
 using namespace std::chrono_literals;
 
 namespace durak {
@@ -21,28 +23,7 @@ GamePage::GamePage( QWidget *parent )
   ui->setupUi( this );
   dw->setFixedSize( 100, 140 );
 
-  PlayerBuffer pb = { std::make_shared<PlayerHuman>( hpw ),
-                      std::make_shared<PlayerAI>( apw ) };
-
-  auto fsm   = createTestFSM();
-  auto cards = createTestCards();
-  controller = new GameController( std::move( pb ), std::move( fsm ),
-                                   std::move( cards ), dw );
-
-  connect( controller, &GameController::putCardOnTable, this,
-           &GamePage::onPutCardOnTable );
-
-  connect( controller, &GameController::addCardOnTable, this,
-           &GamePage::onAddCardOnTable );
-
-  connect( controller, &GameController::clearTable, this,
-           &GamePage::onClearTable );
-
-  QTimer::singleShot( 100ms, this, [this] { controller->start(); } );
-
-  ui->hostPlayerLayout->addWidget( hpw );
-  ui->aiPlayerLayout->addWidget( apw );
-  ui->deckLayout->addWidget( dw );
+  configure();
 }
 
 QWidget *GamePage::prepareWidgetToPutOnTable( Card *card ) noexcept {
@@ -65,22 +46,86 @@ void GamePage::onPutCardOnTable( Card *card ) noexcept {
 
   QWidget *setWidget = prepareWidgetToPutOnTable( card );
 
-  ui->horizontalLayout_3->addStretch();
+  // ui->horizontalLayout_3->addStretch();
   ui->horizontalLayout_3->addWidget( setWidget, 0, Qt::AlignCenter );
-  ui->horizontalLayout_3->addStretch();
+  // ui->horizontalLayout_3->addStretch();
 }
 
 void GamePage::onAddCardOnTable( Card *card ) noexcept {
   QWidget *setWidget = prepareWidgetToPutOnTable( card );
+
+  // ui->horizontalLayout_3->addStretch();
   ui->horizontalLayout_3->addWidget( setWidget, 0, Qt::AlignCenter );
+  // QMessageBox::information(
+  //     this, "123", QString::number( ui->horizontalLayout_3->count() ) );
+  // ui->horizontalLayout_3->addStretch();
 }
 
 void GamePage::onClearTable() noexcept {
   clearLayout( ui->horizontalLayout_3 );
+
+  QWidget *setWidget = prepareWidgetToPutOnTable( nullptr );
+
+  // ui->horizontalLayout_3->addStretch();
+  ui->horizontalLayout_3->addWidget( setWidget, 0, Qt::AlignCenter );
+  // ui->horizontalLayout_3->addStretch();
+}
+
+void GamePage::onRoundEndWithWin( Player *player ) {
+  PlayerType t;
+
+  if ( dynamic_cast<PlayerAI *>( player ) ) {
+    t = PlayerType::AI;
+  } else if ( dynamic_cast<PlayerHuman *>( player ) ) {
+    t = PlayerType::Human;
+  }
+
+  emit showWinPage( t );
+}
+
+void GamePage::configure() {
+  PlayerBuffer pb = { std::make_shared<PlayerHuman>( hpw ),
+                      std::make_shared<PlayerAI>( apw ) };
+
+  auto fsm   = createTestFSM();
+  auto cards = createTestCards();
+  controller = new GameController( std::move( pb ), std::move( fsm ),
+                                   std::move( cards ), dw );
+
+  connect( controller, &GameController::putCardOnTable, this,
+           &GamePage::onPutCardOnTable );
+
+  connect( controller, &GameController::addCardOnTable, this,
+           &GamePage::onAddCardOnTable );
+
+  connect( controller, &GameController::clearTable, this,
+           &GamePage::onClearTable );
+
+  connect( controller, &GameController::roundEndWithWin, this,
+           &GamePage::onRoundEndWithWin );
+
+  QTimer::singleShot( 100ms, this, [this] { controller->start(); } );
+
+  ui->hostPlayerLayout->addWidget( hpw );
+  ui->aiPlayerLayout->addWidget( apw );
+  ui->deckLayout->addWidget( dw );
+}
+
+void GamePage::reconfigure() {
+  if ( controller ) {
+    delete controller;
+    controller = nullptr;
+  }
+
+  configure();
 }
 
 GamePage::~GamePage() {
   delete ui;
+
+  if ( controller ) {
+    delete controller;
+  }
 }
 
 } // namespace durak

@@ -11,6 +11,7 @@ enum class Action {
   PlayerTakeCards,
   DrawCards,
   None,
+  EndGame,
 };
 
 }

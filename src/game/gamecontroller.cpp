@@ -1,5 +1,6 @@
 #include "gamecontroller.hpp"
 #include <QCoreApplication>
+#include <QMessageBox>
 #include <QTimer>
 #include <memory>
 #include <overloads.hpp>
@@ -28,6 +29,15 @@ GameController::GameController( PlayerBuffer &&b, std::unique_ptr<FSM> fsm,
 
     connect( this, &GameController::setCurrentTrump, player.get(),
              &Player::gc_setCurrentTrump );
+
+    connect(
+        player.get(), &Player::gc_player_noCards, this,
+        [this]( Player *player ) {
+          lastEvent = Event::RoundEnded;
+          QTimer::singleShot( 0, &wait, &QEventLoop::quit );
+          emit roundEndWithWin( player );
+        },
+        Qt::SingleShotConnection );
   }
 }
 
@@ -74,6 +84,7 @@ void GameController::playerTakeCardFromTable( Player *player ) noexcept {
   std::vector<std::unique_ptr<Card>> cards;
   cards.push_back( std::move( std::unique_ptr<Card>( move ) ) );
   player->takeCards( std::move( cards ) );
+
   emit putCardOnTable( nullptr );
 }
 
@@ -202,13 +213,9 @@ void GameController::gameLoop() noexcept {
     currentPlayer = b.next();
     currentCard   = nullptr;
 
-    Event lastEvent = Event::GameStarted;
+    lastEvent = Event::GameStarted;
 
     while ( true ) {
-      if ( lastEvent == Event::RoundEnded ) {
-        break;
-      }
-
       auto action_opt = fsm->onEvent( lastEvent );
 
       if ( !action_opt.has_value() ) {
@@ -250,15 +257,22 @@ void GameController::gameLoop() noexcept {
         }
 
         std::visit( overloads {
-                        [this, &lastEvent]( DefenceResultNoCard ) {
-                          lastEvent = Event::PlayerCantDefend;
+                        [this]( DefenceResultNoCard ) {
+                          if ( lastEvent != Event::RoundEnded )
+                            lastEvent = Event::PlayerCantDefend;
                         },
-                        [this, &lastEvent]( DefenceResultAccepted &result ) {
-                          currentCard = std::move( result.card );
-                          emit addCardOnTable( currentCard.get() );
-                          lastEvent = Event::PlayerDefended;
+                        [this]( DefenceResultAccepted &result ) {
+                          auto newCard = std::move( result.card );
+                          emit addCardOnTable( newCard.get() );
+                          if ( lastEvent != Event::RoundEnded )
+                            lastEvent = Event::PlayerDefended;
 
-                          QTimer::singleShot( 500, [] {} );
+                          QTimer::singleShot(
+                              500,
+                              [this, newCard = std::move( newCard )] mutable {
+                                emit clearTable();
+                                currentCard = std::move( newCard );
+                              } );
                         },
                         [this]( DefenceResultRejected ) {
                           currentPlayer = b.prev();
@@ -273,9 +287,7 @@ void GameController::gameLoop() noexcept {
         currentTurn = CurrentTurn::Idle;
         break;
       case Action::RoundEnd :
-        currentTurn = CurrentTurn::Idle;
-        lastEvent   = Event::RoundEnded;
-        break;
+        return;
       default :
         break;
       }

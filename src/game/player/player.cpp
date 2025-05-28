@@ -34,6 +34,9 @@ void Player::gc_cardThrowResult( CardThrowResult result,
   switch ( result ) {
   case CardThrowResult::Accepted : {
     emit pw_handleThrowResult( result, moveCard( thrown_card ).release() );
+    if ( cards.empty() ) {
+      emit gc_player_noCards( this );
+    }
     break;
   }
   default :
