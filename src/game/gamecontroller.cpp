@@ -258,8 +258,11 @@ void GameController::gameLoop() noexcept {
 
         std::visit( overloads {
                         [this]( DefenceResultNoCard ) {
-                          if ( lastEvent != Event::RoundEnded )
-                            lastEvent = Event::PlayerCantDefend;
+                          if ( lastEvent != Event::RoundEnded ) {
+                            lastEvent = Event::PlayerDefended;
+                            currentPlayer = b.next();
+                          }
+
                         },
                         [this]( DefenceResultAccepted &result ) {
                           auto newCard = std::move( result.card );
