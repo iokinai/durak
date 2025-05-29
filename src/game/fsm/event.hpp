@@ -10,6 +10,9 @@ enum class Event {
   PlayerCantDefend,
   RoundEnded,
   CardsDrawed,
+  NextPlayerTookCards,
+  NextRoundStarted,
+  Beat,
 };
 
 }

@@ -1,4 +1,5 @@
 #include "playerAI.hpp"
+#include <QRandomGenerator>
 #include <QTimer>
 
 namespace durak {
@@ -8,8 +9,15 @@ void PlayerAI::gc_onAttackTurn() noexcept {
     return;
   }
 
-  QTimer::singleShot( 1000,
-                      [&]() { emit gc_attacked( cards.front().get() ); } );
+  QTimer::singleShot( 1000, [&]() {
+    if ( QRandomGenerator::global()->generate() % 5 >= 4 ) {
+      emit gc_playerBeaten( this );
+      emit gc_attacked( nullptr );
+      return;
+    }
+
+    emit gc_attacked( cards.front().get() );
+  } );
 }
 
 void PlayerAI::gc_onDefenceTurn( Card *attackCard ) noexcept {
@@ -33,7 +41,6 @@ void PlayerAI::gc_onDefenceTurn( Card *attackCard ) noexcept {
 
 PlayerAI::PlayerAI( AIPlayerWidget *playerWidget )
     : playerWidget( playerWidget ) {
-
   connect( this, &PlayerAI::pw_takeCards, playerWidget,
            &AIPlayerWidget::onCardsGiven );
 

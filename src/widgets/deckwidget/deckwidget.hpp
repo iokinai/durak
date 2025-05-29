@@ -29,6 +29,7 @@ public:
   void mousePressEvent( QMouseEvent *event ) override;
 
   void putCards( std::vector<std::unique_ptr<Card>> &cards );
+  std::unique_ptr<Card> takeTopCard() noexcept;
 
 signals:
   void playerTakeCard( Card *card );

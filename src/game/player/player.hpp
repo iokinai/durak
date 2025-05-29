@@ -45,6 +45,7 @@ protected slots:
 
   virtual void pw_takeCardFromDeck( Card *card ) noexcept   = 0;
   virtual void gc_setCurrentTrump( CardSuit suit ) noexcept = 0;
+  virtual void pw_beaten() noexcept;
 
 signals:
   void pw_takeCards( QVector<Card *> &cards );
@@ -54,6 +55,7 @@ signals:
   void gc_player_takeCardFromDeck( Card *card, Player *player );
   void gc_player_takeCurrentCard( Player *player );
   void gc_player_noCards( Player *player );
+  void gc_playerBeaten( Player *player );
 };
 
 } // namespace durak

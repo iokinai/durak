@@ -17,15 +17,17 @@ GameController::GameController( PlayerBuffer &&b, std::unique_ptr<FSM> fsm,
       random_device(), random_engine( random_device() ), deck( deck ) {
   shuffleHeap( this->heap );
 
-  connect( qApp, &QCoreApplication::aboutToQuit, this,
-           [this]( auto ) { wait.quit(); } );
+  connect( qApp, &QCoreApplication::aboutToQuit, this, [this]( auto ) {
+    exitReason = WaitExitReason::Exiting;
+    wait.quit();
+  } );
 
   for ( auto &player : this->b ) {
     connect( player.get(), &Player::gc_player_takeCardFromDeck, this,
              &GameController::playerTakeCardFromDeck );
 
     connect( player.get(), &Player::gc_player_takeCurrentCard, this,
-             &GameController::playerTakeCardFromTable );
+             &GameController::playerTakeCardsFromTable );
 
     connect( this, &GameController::setCurrentTrump, player.get(),
              &Player::gc_setCurrentTrump );
@@ -33,11 +35,24 @@ GameController::GameController( PlayerBuffer &&b, std::unique_ptr<FSM> fsm,
     connect(
         player.get(), &Player::gc_player_noCards, this,
         [this]( Player *player ) {
+          if ( !this->deck->deck.empty() ) {
+            return;
+          }
+
           lastEvent = Event::RoundEnded;
           QTimer::singleShot( 0, &wait, &QEventLoop::quit );
           emit roundEndWithWin( player );
         },
         Qt::SingleShotConnection );
+
+    connect( player.get(), &Player::gc_playerBeaten, this,
+             [this]( Player *player ) {
+               if ( currentPlayer.get() != player ) {
+                 return;
+               }
+
+               table.clear();
+             } );
   }
 }
 
@@ -73,19 +88,14 @@ void GameController::playerTakeCardFromDeck( Card *card,
   currentPlayer->takeCards( std::move( c ) );
 }
 
-void GameController::playerTakeCardFromTable( Player *player ) noexcept {
-  if ( !( currentPlayer.get() == player &&
-          currentTurn == CurrentTurn::Defence ) ) {
+void GameController::playerTakeCardsFromTable( Player *player ) noexcept {
+  if ( currentTurn != CurrentTurn::Defence ) {
     return;
   }
 
-  Card *move = currentCard.release();
+  player->takeCards( std::move( table ) );
 
-  std::vector<std::unique_ptr<Card>> cards;
-  cards.push_back( std::move( std::unique_ptr<Card>( move ) ) );
-  player->takeCards( std::move( cards ) );
-
-  emit putCardOnTable( nullptr );
+  emit clearTable();
 }
 
 std::vector<std::unique_ptr<Card>> GameController::randomFromHeap() noexcept {
@@ -110,10 +120,9 @@ void GameController::formatTable() noexcept {
   }
 
   deck->putCards( heap );
-  heap.clear();
 }
 
-WaitResult<std::unique_ptr<Card>>
+WaitResult<CardWaitResult>
 GameController::attackRequest( std::shared_ptr<Player> player ) noexcept {
   Card *card     = nullptr;
   bool gotResult = false;
@@ -121,8 +130,9 @@ GameController::attackRequest( std::shared_ptr<Player> player ) noexcept {
   connect(
       player.get(), &Player::gc_attacked, this,
       [&card, this, &gotResult]( Card *sent ) mutable {
-        card      = sent;
-        gotResult = true;
+        card       = sent;
+        gotResult  = true;
+        exitReason = WaitExitReason::Ok;
         wait.exit();
       },
       Qt::SingleShotConnection );
@@ -139,17 +149,22 @@ GameController::attackRequest( std::shared_ptr<Player> player ) noexcept {
     wait.exec();
   }
 
-  if ( !gotResult ) {
+  if ( !gotResult && exitReason == WaitExitReason::Exiting ) {
     return WaitResultCritical {};
   }
 
-  emit cardThrowResult( CardThrowResult::Accepted, card );
-  emit putCardOnTable( card );
+  if ( !card ) {
+    return CardWaitResultNoCard {};
+  }
 
-  return std::move( std::unique_ptr<Card>( card ) );
+  emit cardThrowResult( CardThrowResult::Accepted, card );
+  table.push_back( std::unique_ptr<Card>( card ) );
+  emit addCardOnTable( card );
+
+  return CardWaitResultAccepted { card };
 }
 
-WaitResult<DefenceResult>
+WaitResult<CardWaitResult>
 GameController::defenceRequest( std::shared_ptr<Player> player,
                                 Card *attackCard ) noexcept {
   Card *card     = nullptr;
@@ -188,34 +203,63 @@ GameController::defenceRequest( std::shared_ptr<Player> player,
 
   emit cardThrowResult( result, card );
 
-  emit putCardOnTable( nullptr );
-
   switch ( result ) {
   case CardThrowResult::Accepted : {
     if ( !card ) {
-      return DefenceResultNoCard {};
+      return CardWaitResultNoCard {};
     }
 
-    return DefenceResultAccepted { std::move( std::unique_ptr<Card>( card ) ) };
+    table.push_back( std::unique_ptr<Card>( card ) );
+    emit addCardOnTable( card );
+    return CardWaitResultAccepted { card };
   }
   case CardThrowResult::RejectedRequiersRepeat :
-    return DefenceResultRejected {};
+    return CardWaitResultRejected {};
   }
 
-  return DefenceResultNoCard {};
+  return CardWaitResultNoCard {};
+}
+
+void GameController::dealCardsTo6() noexcept {
+  for ( auto player : b ) {
+    if ( player->cards.size() >= default_cards_per_player ) {
+      continue;
+    }
+
+    auto deal_count = default_cards_per_player - player->cards.size();
+    std::vector<std::unique_ptr<Card>> cards;
+
+    for ( auto i = 0; i < deal_count; ++i ) {
+      auto c = deck->takeTopCard();
+
+      if ( c != nullptr ) {
+        cards.push_back( std::move( std::move( c ) ) );
+      }
+    }
+
+    player->takeCards( std::move( cards ) );
+  }
 }
 
 void GameController::gameLoop() noexcept {
   currentTrump = heap.back()->getSuit();
   emit setCurrentTrump( currentTrump );
 
+  lastEvent = Event::GameStarted;
+
   while ( true ) {
+
     currentPlayer = b.next();
     currentCard   = nullptr;
+    table.clear();
 
-    lastEvent = Event::GameStarted;
-
+    // Round loop
     while ( true ) {
+      if ( lastEvent == Event::RoundEnded ) {
+        lastEvent = Event::NextRoundStarted;
+        break;
+      }
+
       auto action_opt = fsm->onEvent( lastEvent );
 
       if ( !action_opt.has_value() ) {
@@ -228,68 +272,83 @@ void GameController::gameLoop() noexcept {
       case Action::GiveCards : {
         formatTable();
         lastEvent = Event::RoundStarted;
-        emit putCardOnTable( nullptr );
+        emit clearTable();
         currentTurn = CurrentTurn::Idle;
         break;
       }
-      case Action::PlayerAttack : {
+      case Action::PrevPlayerAttack : {
+        currentPlayer = b.prev();
+      }
+      case Action::CurrPlayerAttack : {
         currentTurn     = CurrentTurn::Attack;
         auto waitResult = attackRequest( currentPlayer );
-        auto result     = std::get_if<std::unique_ptr<Card>>( &waitResult );
+        auto result     = std::get_if<CardWaitResult>( &waitResult );
 
         if ( !result ) {
           return;
         }
 
-        currentCard = std::move( *result );
-        lastEvent   = Event::PlayerAttacked;
+        std::visit( overloads { [this]( CardWaitResultNoCard ) {
+                                 lastEvent = Event::Beat;
+                               },
+                                [this]( CardWaitResultAccepted &result ) {
+                                  currentCard = result.card;
+                                  lastEvent   = Event::PlayerAttacked;
+                                },
+                                []( CardWaitResultRejected ) {} },
+                    *result );
+
         break;
       }
       case Action::NextPlayerDefend : {
         currentTurn     = CurrentTurn::Defence;
         currentPlayer   = b.next();
-        auto waitResult = defenceRequest( currentPlayer, currentCard.get() );
+        auto waitResult = defenceRequest( currentPlayer, currentCard );
 
-        auto resultVariant = std::get_if<DefenceResult>( &waitResult );
+        auto resultVariant = std::get_if<CardWaitResult>( &waitResult );
 
         if ( !resultVariant ) {
           return;
         }
 
-        std::visit( overloads {
-                        [this]( DefenceResultNoCard ) {
-                          if ( lastEvent != Event::RoundEnded ) {
-                            lastEvent = Event::PlayerDefended;
-                            currentPlayer = b.next();
-                          }
+        std::visit(
+            overloads {
+                [this]( CardWaitResultNoCard ) {
+                  if ( lastEvent != Event::RoundEnded ) {
+                    lastEvent     = Event::PlayerCantDefend;
+                    currentPlayer = b.next();
+                  }
+                },
+                [this]( CardWaitResultAccepted &result ) {
+                  emit addCardOnTable( currentCard );
+                  if ( lastEvent != Event::RoundEnded )
+                    lastEvent = Event::PlayerDefended;
 
-                        },
-                        [this]( DefenceResultAccepted &result ) {
-                          auto newCard = std::move( result.card );
-                          emit addCardOnTable( newCard.get() );
-                          if ( lastEvent != Event::RoundEnded )
-                            lastEvent = Event::PlayerDefended;
-
-                          QTimer::singleShot(
-                              500,
-                              [this, newCard = std::move( newCard )] mutable {
-                                emit clearTable();
-                                currentCard = std::move( newCard );
-                              } );
-                        },
-                        [this]( DefenceResultRejected ) {
-                          currentPlayer = b.prev();
-                          emit uiGameLogicError();
-                        },
-                    },
-                    *resultVariant );
+                  QTimer::singleShot(
+                      500, [this, newCard = std::move( currentCard )] mutable {
+                        emit clearTable();
+                        currentCard = std::move( currentCard );
+                      } );
+                },
+                [this]( CardWaitResultRejected ) {
+                  currentPlayer = b.prev();
+                  emit uiGameLogicError();
+                },
+            },
+            *resultVariant );
         break;
       }
-      case Action::PlayerTakeCards :
+      case Action::DefenderPlayerTakeCards :
+        lastEvent = Event::NextPlayerTookCards;
+        break;
       case Action::DrawCards :
         currentTurn = CurrentTurn::Idle;
+        dealCardsTo6();
         break;
       case Action::RoundEnd :
+        lastEvent = Event::RoundEnded;
+        break;
+      case Action::EndGame :
         return;
       default :
         break;

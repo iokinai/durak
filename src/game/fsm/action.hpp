@@ -5,10 +5,11 @@ namespace durak {
 enum class Action {
   StartRound,
   GiveCards,
-  PlayerAttack,
+  CurrPlayerAttack,
+  PrevPlayerAttack,
   NextPlayerDefend,
   RoundEnd,
-  PlayerTakeCards,
+  DefenderPlayerTakeCards,
   DrawCards,
   None,
   EndGame,

@@ -14,7 +14,7 @@ class PlayerBuffer {
   using iterator       = std::vector<std::shared_ptr<Player>>::iterator;
   using const_iterator = std::vector<std::shared_ptr<Player>>::const_iterator;
 
-  size_t circlefn( size_t min, size_t max, int64_t current ) const noexcept;
+  size_t circlefn( int64_t min, int64_t max, int64_t current ) const noexcept;
 
 public:
   PlayerBuffer(
@@ -24,6 +24,7 @@ public:
   std::shared_ptr<Player> prev() const noexcept;
 
   size_t size() const noexcept;
+  size_t get_current() const noexcept;
 
   PlayerBuffer( PlayerBuffer &&other ) noexcept;
 

@@ -22,6 +22,9 @@ PlayerHuman::PlayerHuman( HostPlayerWidget *playerWidget )
 
   connect( playerWidget, &HostPlayerWidget::player_takeCurrentCard, this,
            [this]() { emit gc_player_takeCurrentCard( this ); } );
+
+  connect( playerWidget, &HostPlayerWidget::player_playerBeaten, this,
+           &PlayerHuman::pw_beaten );
 }
 
 void PlayerHuman::pw_onAttacked( Card *attackCard ) noexcept {

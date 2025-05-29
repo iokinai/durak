@@ -68,6 +68,7 @@ signals:
   void defence( Card *card );
 
   void player_playerTakeCardFromDeck( Card *card );
+  void player_playerBeaten();
 };
 
 } // namespace durak

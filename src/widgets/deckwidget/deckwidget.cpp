@@ -22,6 +22,17 @@ CardWidget *DeckWidget::getCardTopWidget() {
   return cardWidget;
 }
 
+std::unique_ptr<Card> DeckWidget::takeTopCard() noexcept {
+  if ( deck.empty() ) {
+    return nullptr;
+  }
+
+  std::unique_ptr<Card> topCard = std::move( deck.top() );
+  deck.pop();
+
+  return topCard;
+}
+
 void DeckWidget::mousePressEvent( QMouseEvent *event ) {
   if ( event->button() != Qt::LeftButton )
     return;

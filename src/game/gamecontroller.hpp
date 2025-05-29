@@ -3,7 +3,7 @@
 #include <QEventLoop>
 #include <QObject>
 #include <game/cards/card.hpp>
-#include <game/defenceresultmarker.hpp>
+#include <game/cardwaitresultmarker.hpp>
 #include <game/fsm/fsm.hpp>
 #include <game/player/player.hpp>
 #include <game/playerbuffer.hpp>
@@ -23,6 +23,14 @@ class GameController : public QObject {
     Idle,
   } currentTurn = CurrentTurn::Idle;
 
+  enum class WaitExitReason {
+    None,
+    Unknown,
+    Ok,
+    Exiting,
+    OtherVariantRetNullptr,
+  } exitReason = WaitExitReason::None;
+
   PlayerBuffer b;
   std::unique_ptr<FSM> fsm;
   std::vector<std::unique_ptr<Card>> heap;
@@ -32,9 +40,15 @@ class GameController : public QObject {
   std::mt19937 random_engine;
 
   std::shared_ptr<Player> currentPlayer;
-  std::unique_ptr<Card> currentCard;
+  Card *currentCard;
+  std::vector<std::unique_ptr<Card>> table;
   CardSuit currentTrump;
   Event lastEvent;
+
+  std::shared_ptr<Player> attacker;
+  std::shared_ptr<Player> defender;
+
+  void dealCardsTo6() noexcept;
 
   QEventLoop wait;
 
@@ -57,7 +71,7 @@ signals:
 
 private slots:
   void playerTakeCardFromDeck( Card *card, Player *player ) noexcept;
-  void playerTakeCardFromTable( Player *player ) noexcept;
+  void playerTakeCardsFromTable( Player *player ) noexcept;
 
 public:
   GameController( PlayerBuffer &&b, std::unique_ptr<FSM> fsm,
@@ -73,10 +87,10 @@ public:
   void dealCards() noexcept;
   void formatTable() noexcept;
 
-  WaitResult<std::unique_ptr<Card>>
+  WaitResult<CardWaitResult>
   attackRequest( std::shared_ptr<Player> player ) noexcept;
-  WaitResult<DefenceResult> defenceRequest( std::shared_ptr<Player> player,
-                                            Card *attackCard ) noexcept;
+  WaitResult<CardWaitResult> defenceRequest( std::shared_ptr<Player> player,
+                                             Card *attackCard ) noexcept;
 };
 
 } // namespace durak

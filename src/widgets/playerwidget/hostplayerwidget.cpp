@@ -23,6 +23,9 @@ HostPlayerWidget::HostPlayerWidget( DeckWidget *widget, QWidget *parent )
 
   connect( ui->takeButton, &QPushButton::clicked, this,
            &HostPlayerWidget::takeCurrentCard );
+
+  connect( ui->beatenButton, &QPushButton::clicked, this,
+           &HostPlayerWidget::callBeaten );
 }
 
 void HostPlayerWidget::onCardsGiven( QVector<Card *> &givenCards ) noexcept {
@@ -55,12 +58,14 @@ void HostPlayerWidget::prepareConnects() noexcept {
 void HostPlayerWidget::onAttackTurn() noexcept {
   mode = UiMode::Attack;
   ui->takeButton->setEnabled( false );
+  ui->beatenButton->setEnabled( true );
 }
 
 void HostPlayerWidget::onDefenceTurn( Card *attackCard ) noexcept {
   mode        = UiMode::Defence;
   currentCard = attackCard;
   ui->takeButton->setEnabled( true );
+  ui->beatenButton->setEnabled( false );
 }
 
 void HostPlayerWidget::onCardAttackClicked( Card *card ) noexcept {
@@ -104,6 +109,11 @@ void HostPlayerWidget::throwResult( CardThrowResult result,
 void HostPlayerWidget::takeCurrentCard() noexcept {
   emit player_takeCurrentCard();
   emit defence( nullptr );
+}
+
+void HostPlayerWidget::callBeaten() noexcept {
+  emit player_playerBeaten();
+  emit attack( nullptr );
 }
 
 void HostPlayerWidget::afterSettingCurrentTrump() {

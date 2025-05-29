@@ -25,6 +25,10 @@ void Player::takeCards( std::vector<std::unique_ptr<Card>> &&cards ) {
   emit pw_takeCards( tmp );
 }
 
+void Player::pw_beaten() noexcept {
+  emit gc_playerBeaten( this );
+}
+
 void Player::gc_cardThrowResult( CardThrowResult result,
                                  Card *thrown_card ) noexcept {
   if ( !thrown_card ) {

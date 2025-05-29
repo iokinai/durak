@@ -87,7 +87,7 @@ void GamePage::configure() {
   PlayerBuffer pb = { std::make_shared<PlayerHuman>( hpw ),
                       std::make_shared<PlayerAI>( apw ) };
 
-  auto fsm   = createTestFSM();
+  auto fsm   = createRegularDurakFSM();
   auto cards = createTestCards();
   controller = new GameController( std::move( pb ), std::move( fsm ),
                                    std::move( cards ), dw );

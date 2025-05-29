@@ -15,7 +15,7 @@
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,10">
    <item>
-    <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0">
+    <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0,0">
      <property name="spacing">
       <number>0</number>
      </property>
@@ -32,6 +32,13 @@
        </property>
        <property name="text">
         <string>Взять карту</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="beatenButton">
+       <property name="text">
+        <string>Бито</string>
        </property>
       </widget>
      </item>

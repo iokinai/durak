@@ -38,6 +38,7 @@ public slots:
   virtual void throwResult( CardThrowResult result,
                             Card *thrown_card ) noexcept override;
   void takeCurrentCard() noexcept;
+  void callBeaten() noexcept;
 
 signals:
   void player_takeCurrentCard();
