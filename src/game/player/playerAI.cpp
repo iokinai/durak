@@ -5,7 +5,7 @@
 namespace durak {
 
 void PlayerAI::gc_onAttackTurn() noexcept {
-  if ( cards.empty() ) {
+  if ( cards.empty() || !table ) {
     return;
   }
 
@@ -16,8 +16,35 @@ void PlayerAI::gc_onAttackTurn() noexcept {
       return;
     }
 
-    emit gc_attacked( cards.front().get() );
+    auto cardToAttack = selectCardToAttack();
+
+    if ( !cardToAttack ) {
+      emit gc_playerBeaten( this );
+      emit gc_attacked( nullptr );
+      return;
+    }
+
+    emit gc_attacked( cardToAttack );
   } );
+}
+
+Card *PlayerAI::selectCardToAttack() const noexcept {
+  if ( !table || table->empty() ) {
+    return cards.front().get();
+  }
+
+  for ( auto &c : *table ) {
+    auto card = std::find_if( cards.begin(), cards.end(),
+                              [&c]( const std::unique_ptr<Card> &card ) {
+                                return c->getRank() == card->getRank();
+                              } );
+
+    if ( card != cards.end() ) {
+      return card->get();
+    }
+  }
+
+  return nullptr;
 }
 
 void PlayerAI::gc_onDefenceTurn( Card *attackCard ) noexcept {

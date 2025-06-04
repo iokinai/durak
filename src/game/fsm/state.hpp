@@ -16,11 +16,6 @@ class State {
 public:
   State( Action onEnter );
 
-  // State( State &&other ) {
-  //   onEnter     = std::move( other.onEnter );
-  //   transitions = std::move( other.transitions );
-  // }
-
   void setTransitions( const std::unordered_map<Event, std::weak_ptr<State>>
                            &transitions ) noexcept;
 

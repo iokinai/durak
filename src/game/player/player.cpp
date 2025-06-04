@@ -49,4 +49,8 @@ void Player::gc_cardThrowResult( CardThrowResult result,
   }
 }
 
+void Player::setTable( const std::vector<std::unique_ptr<Card>> *table ) {
+  this->table = table;
+}
+
 } // namespace durak

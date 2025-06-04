@@ -49,6 +49,9 @@ class GameController : public QObject {
   std::shared_ptr<Player> defender;
 
   void dealCardsTo6() noexcept;
+  bool canCardBeAccepted( Card *card );
+  bool canAttackCardBeAccepted( Card const &card );
+  bool canDefenceCardBeAccepted( Card const &card );
 
   QEventLoop wait;
 

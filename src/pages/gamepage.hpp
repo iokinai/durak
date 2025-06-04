@@ -26,7 +26,7 @@ class GamePage : public QWidget {
   QWidget *prepareWidgetToPutOnTable( Card *card ) noexcept;
 
 private slots:
-  void onPutCardOnTable( Card *card ) noexcept;
+  //void onPutCardOnTable( Card *card ) noexcept;
   void onAddCardOnTable( Card *card ) noexcept;
   void onClearTable() noexcept;
   void onRoundEndWithWin( Player *player );

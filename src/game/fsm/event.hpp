@@ -13,6 +13,8 @@ enum class Event {
   NextPlayerTookCards,
   NextRoundStarted,
   Beat,
+  AttackFailed,
+  DefenceFailed,
 };
 
 }

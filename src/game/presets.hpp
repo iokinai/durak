@@ -49,16 +49,20 @@ inline std::unique_ptr<FSM> createRegularDurakFSM() {
   prepare_round->setTransitions( { { Event::RoundStarted, attack } } );
   attack->setTransitions( { { Event::PlayerAttacked, defend },
                             { Event::RoundEnded, end },
-                            { Event::Beat, beat } } );
+                            { Event::Beat, beat },
+                            { Event::AttackFailed, attack } } );
 
   defend->setTransitions( { { Event::PlayerDefended, prev_attack },
                             { Event::PlayerCantDefend, take_all_cards },
                             { Event::RoundEnded, end },
-                            { Event::Beat, beat } } );
+                            { Event::Beat, beat },
+                            { Event::AttackFailed, attack },
+                            { Event::DefenceFailed, defend } } );
   take_all_cards->setTransitions(
       { { Event::NextPlayerTookCards, deal_cards } } );
-  prev_attack->setTransitions(
-      { { Event::PlayerAttacked, defend }, { Event::Beat, beat } } );
+  prev_attack->setTransitions( { { Event::PlayerAttacked, defend },
+                                 { Event::Beat, beat },
+                                 { Event::AttackFailed, attack } } );
   end->setTransitions( { { Event::NextRoundStarted, attack } } );
   deal_cards->setTransitions( { { Event::NextPlayerTookCards, end } } );
   beat->setTransitions( { { Event::Beat, end } } );

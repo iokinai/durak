@@ -80,13 +80,6 @@ void HostPlayerWidget::onCardAttackClicked( Card *card ) noexcept {
 
 void HostPlayerWidget::onCardDefenceClicked( Card *card,
                                              Card *attack ) noexcept {
-
-  if ( !card->beats( *attack, currentTrump ) ) {
-    QMessageBox::critical( this, "Does not beat!",
-                           "This card does not beat the attack one" );
-    return;
-  }
-
   mode        = UiMode::Idle;
   currentCard = nullptr;
   emit defence( card );
@@ -102,6 +95,8 @@ void HostPlayerWidget::throwResult( CardThrowResult result,
     break;
   }
   case CardThrowResult::RejectedRequiersRepeat :
+    QMessageBox::critical( this, "Wrong card",
+                           "This card can not be used at this moment" );
     break;
   }
 }

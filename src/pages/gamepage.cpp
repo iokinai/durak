@@ -31,44 +31,20 @@ QWidget *GamePage::prepareWidgetToPutOnTable( Card *card ) noexcept {
 
   if ( card ) {
     setWidget = new CardWidget( card, this, true );
-  } else {
-    setWidget = new QWidget( this );
   }
 
-  setWidget->setMinimumSize( 100, 140 );
-  setWidget->setSizePolicy( QSizePolicy::Preferred, QSizePolicy::Preferred );
-
   return setWidget;
-}
-
-void GamePage::onPutCardOnTable( Card *card ) noexcept {
-  clearLayout( ui->horizontalLayout_3 );
-
-  QWidget *setWidget = prepareWidgetToPutOnTable( card );
-
-  // ui->horizontalLayout_3->addStretch();
-  ui->horizontalLayout_3->addWidget( setWidget, 0, Qt::AlignCenter );
-  // ui->horizontalLayout_3->addStretch();
 }
 
 void GamePage::onAddCardOnTable( Card *card ) noexcept {
   QWidget *setWidget = prepareWidgetToPutOnTable( card );
 
-  // ui->horizontalLayout_3->addStretch();
   ui->horizontalLayout_3->addWidget( setWidget, 0, Qt::AlignCenter );
-  // QMessageBox::information(
-  //     this, "123", QString::number( ui->horizontalLayout_3->count() ) );
-  // ui->horizontalLayout_3->addStretch();
 }
 
 void GamePage::onClearTable() noexcept {
   clearLayout( ui->horizontalLayout_3 );
-
-  QWidget *setWidget = prepareWidgetToPutOnTable( nullptr );
-
-  // ui->horizontalLayout_3->addStretch();
-  ui->horizontalLayout_3->addWidget( setWidget, 0, Qt::AlignCenter );
-  // ui->horizontalLayout_3->addStretch();
+  ui->horizontalLayout_3->addWidget( new QWidget(this), 0, Qt::AlignCenter );
 }
 
 void GamePage::onRoundEndWithWin( Player *player ) {
@@ -91,9 +67,6 @@ void GamePage::configure() {
   auto cards = createTestCards();
   controller = new GameController( std::move( pb ), std::move( fsm ),
                                    std::move( cards ), dw );
-
-  connect( controller, &GameController::putCardOnTable, this,
-           &GamePage::onPutCardOnTable );
 
   connect( controller, &GameController::addCardOnTable, this,
            &GamePage::onAddCardOnTable );

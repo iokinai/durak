@@ -10,6 +10,8 @@ class PlayerAI : public Player {
 
   AIPlayerWidget *playerWidget;
 
+  Card *selectCardToAttack() const noexcept;
+
 protected slots:
   virtual void gc_onAttackTurn() noexcept override;
   virtual void gc_onDefenceTurn( Card *attackCard ) noexcept override;

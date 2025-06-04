@@ -53,7 +53,38 @@ GameController::GameController( PlayerBuffer &&b, std::unique_ptr<FSM> fsm,
 
                table.clear();
              } );
+
+    player->setTable( &this->table );
   }
+}
+
+bool GameController::canCardBeAccepted( Card *card ) {
+  if ( !card ) {
+    return false;
+  }
+
+  switch ( currentTurn ) {
+  case CurrentTurn::Attack :
+    return canAttackCardBeAccepted( *card );
+  case CurrentTurn::Defence :
+    return canDefenceCardBeAccepted( *card );
+  case CurrentTurn::Idle :
+    return false;
+  default :
+    return false;
+  }
+}
+
+bool GameController::canAttackCardBeAccepted( Card const &card ) {
+  return table.empty() ||
+         std::find_if( table.begin(), table.end(),
+                       [&card]( const std::unique_ptr<Card> &c ) {
+                         return card.getRank() == c->getRank();
+                       } ) != table.end();
+}
+
+bool GameController::canDefenceCardBeAccepted( Card const &card ) {
+  return card.beats( *currentCard, currentTrump );
 }
 
 void GameController::shuffleHeap(
@@ -95,7 +126,7 @@ void GameController::playerTakeCardsFromTable( Player *player ) noexcept {
 
   player->takeCards( std::move( table ) );
 
-  emit clearTable();
+  // emit clearTable();
 }
 
 std::vector<std::unique_ptr<Card>> GameController::randomFromHeap() noexcept {
@@ -157,6 +188,11 @@ GameController::attackRequest( std::shared_ptr<Player> player ) noexcept {
     return CardWaitResultNoCard {};
   }
 
+  if ( !canCardBeAccepted( card ) ) {
+    emit cardThrowResult( CardThrowResult::RejectedRequiersRepeat, card );
+    return CardWaitResultRejected {};
+  }
+
   emit cardThrowResult( CardThrowResult::Accepted, card );
   table.push_back( std::unique_ptr<Card>( card ) );
   emit addCardOnTable( card );
@@ -197,7 +233,7 @@ GameController::defenceRequest( std::shared_ptr<Player> player,
 
   CardThrowResult result = CardThrowResult::Accepted;
 
-  if ( card && !card->beats( *attackCard, currentTrump ) ) {
+  if ( card && !canCardBeAccepted( card ) ) {
     result = CardThrowResult::RejectedRequiersRepeat;
   }
 
@@ -251,7 +287,6 @@ void GameController::gameLoop() noexcept {
 
     currentPlayer = b.next();
     currentCard   = nullptr;
-    table.clear();
 
     // Round loop
     while ( true ) {
@@ -295,7 +330,9 @@ void GameController::gameLoop() noexcept {
                                   currentCard = result.card;
                                   lastEvent   = Event::PlayerAttacked;
                                 },
-                                []( CardWaitResultRejected ) {} },
+                                [this]( CardWaitResultRejected ) {
+                                  lastEvent = Event::AttackFailed;
+                                } },
                     *result );
 
         break;
@@ -320,18 +357,17 @@ void GameController::gameLoop() noexcept {
                   }
                 },
                 [this]( CardWaitResultAccepted &result ) {
-                  emit addCardOnTable( currentCard );
                   if ( lastEvent != Event::RoundEnded )
                     lastEvent = Event::PlayerDefended;
 
                   QTimer::singleShot(
                       500, [this, newCard = std::move( currentCard )] mutable {
-                        emit clearTable();
                         currentCard = std::move( currentCard );
                       } );
                 },
                 [this]( CardWaitResultRejected ) {
                   currentPlayer = b.prev();
+                  lastEvent     = Event::DefenceFailed;
                   emit uiGameLogicError();
                 },
             },
@@ -347,6 +383,8 @@ void GameController::gameLoop() noexcept {
         break;
       case Action::RoundEnd :
         lastEvent = Event::RoundEnded;
+        table.clear();
+        emit clearTable();
         break;
       case Action::EndGame :
         return;

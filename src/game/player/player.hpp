@@ -30,11 +30,13 @@ protected:
 
   std::vector<std::unique_ptr<Card>> cards;
   virtual void takeCards( std::vector<std::unique_ptr<Card>> &&cards );
+  const std::vector<std::unique_ptr<Card>> *table;
 
 public:
   virtual ~Player() = default;
 
   virtual std::unique_ptr<Card> moveCard( Card *c );
+  virtual void setTable( const std::vector<std::unique_ptr<Card>> *table );
 
 protected slots:
   virtual void gc_onAttackTurn() noexcept                    = 0;
