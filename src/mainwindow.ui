@@ -11,12 +11,12 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Дурак</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
-      <widget class="QStackedWidget" name="pages"/>
+     <widget class="QStackedWidget" name="pages"/>
     </item>
    </layout>
   </widget>

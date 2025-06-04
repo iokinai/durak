@@ -27,10 +27,10 @@ protected:
   }
 
   CardSuit currentTrump;
-
   std::vector<std::unique_ptr<Card>> cards;
-  virtual void takeCards( std::vector<std::unique_ptr<Card>> &&cards );
   const std::vector<std::unique_ptr<Card>> *table;
+
+  virtual void takeCards( std::vector<std::unique_ptr<Card>> &&cards );
 
 public:
   virtual ~Player() = default;

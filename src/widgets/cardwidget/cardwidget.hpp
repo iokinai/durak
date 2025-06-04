@@ -25,6 +25,7 @@ class CardWidget : public QWidget {
 protected:
   Card *card;
   bool isFaceUp;
+  QString getFontColor() const noexcept;
 
   void faceUpdate() noexcept;
 

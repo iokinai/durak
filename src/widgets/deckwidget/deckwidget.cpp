@@ -33,34 +33,6 @@ std::unique_ptr<Card> DeckWidget::takeTopCard() noexcept {
   return topCard;
 }
 
-void DeckWidget::mousePressEvent( QMouseEvent *event ) {
-  if ( event->button() != Qt::LeftButton )
-    return;
-
-  if ( deck.empty() ) {
-    emit playerTakeCard( nullptr );
-    return;
-  }
-
-  std::unique_ptr<Card> topCard = std::move( deck.top() );
-  deck.pop();
-
-  if ( currentTopCardWidget ) {
-    ui->verticalLayout->removeWidget( currentTopCardWidget );
-    currentTopCardWidget->hide();
-    currentTopCardWidget->deleteLater();
-    currentTopCardWidget = nullptr;
-  }
-
-  if ( !deck.empty() ) {
-    Card *nextCard       = deck.top().get();
-    currentTopCardWidget = new CardWidget( nextCard, this, false );
-    ui->verticalLayout->addWidget( currentTopCardWidget );
-  }
-
-  emit playerTakeCard( topCard.release() );
-}
-
 void DeckWidget::putCards( std::vector<std::unique_ptr<Card>> &cards ) {
   for ( auto &card : cards ) {
     deck.emplace( std::move( card ) );

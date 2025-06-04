@@ -15,12 +15,6 @@ HostPlayerWidget::HostPlayerWidget( DeckWidget *widget, QWidget *parent )
       deckWidget( widget ) {
   ui->setupUi( this );
 
-  connect( deckWidget, &DeckWidget::playerTakeCard, this, [this]( Card *card ) {
-    if ( card ) {
-      emit player_playerTakeCardFromDeck( card );
-    }
-  } );
-
   connect( ui->takeButton, &QPushButton::clicked, this,
            &HostPlayerWidget::takeCurrentCard );
 

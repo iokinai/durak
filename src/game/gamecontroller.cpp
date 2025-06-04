@@ -125,8 +125,6 @@ void GameController::playerTakeCardsFromTable( Player *player ) noexcept {
   }
 
   player->takeCards( std::move( table ) );
-
-  // emit clearTable();
 }
 
 std::vector<std::unique_ptr<Card>> GameController::randomFromHeap() noexcept {

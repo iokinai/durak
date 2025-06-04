@@ -33,10 +33,26 @@ CardWidget::CardWidget( Card *card, QWidget *parent, bool isFaceUp )
   faceUpdate();
 }
 
+QString CardWidget::getFontColor() const noexcept {
+  switch ( card->getSuit() ) {
+
+  case CardSuit::Heart :
+  case CardSuit::Diamond :
+    return "red;";
+  case CardSuit::Spade :
+  case CardSuit::Club :
+  case CardSuit::DM :
+  default :
+    return "black;";
+  }
+}
+
 void CardWidget::faceUpdate() noexcept {
   QString color    = isFaceUp ? "255, 255, 255" : "30, 144, 255";
   QString colorRGB = QString( "rgb(%1)" ).arg( color );
   QString backImage;
+
+  QString fontColor = getFontColor();
 
   if ( !isFaceUp ) {
     backImage = "background-image: url(:/images/cardback.png)";
@@ -44,9 +60,10 @@ void CardWidget::faceUpdate() noexcept {
 
   setStyleSheet(
       QString(
-          "#CardWidget { background-color: %1; %2; } QLabel { color: black; }" )
+          "#CardWidget { background-color: %1; %2; } QLabel { color: %3 }" )
           .arg( colorRGB )
-          .arg( backImage ) );
+          .arg( backImage )
+          .arg( fontColor ) );
 
   ui->suitTopImage->setText(
       isFaceUp ? QString::fromStdString( suitToString( card->getSuit() ) )

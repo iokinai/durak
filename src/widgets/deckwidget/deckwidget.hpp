@@ -26,13 +26,8 @@ public:
   explicit DeckWidget( QWidget *parent = nullptr );
   ~DeckWidget();
 
-  void mousePressEvent( QMouseEvent *event ) override;
-
   void putCards( std::vector<std::unique_ptr<Card>> &cards );
   std::unique_ptr<Card> takeTopCard() noexcept;
-
-signals:
-  void playerTakeCard( Card *card );
 };
 
 } // namespace durak
